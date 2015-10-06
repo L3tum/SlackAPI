@@ -1,30 +1,68 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using SlackAPI;
 
 namespace SlackBot
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            SlackClient sc = new SlackClient("xoxb-5134150563-iZKW7CIodzRbffqVmFmz6m2S");
-            Console.WriteLine(sc.SendMessage("bot", "HELLO"));
+            SlackClient sc;
+            bool another = false;
+            if (args.Length > 0)
+            {
+                try
+                {
+                    sc = new SlackClient(args[0]);
+                    another = true;
+                }
+                catch
+                {
+                    sc = new SlackClient("xoxp-5007212458-11027941589-11025314452-ac4fcf3c3b");
+                }
+            }
+            else
+            {
+                sc = new SlackClient("xoxp-5007212458-11027941589-11025314452-ac4fcf3c3b");
+            }
             General.sc = sc;
 
-            WebSlack ws = new WebSlack();
+            var ws = new WebSlack();
             ws.CreateWebSocket(sc.URL);
             General.ws = ws;
 
-            Listener ls = new Listener(General.ws);
-            Thread question = new Thread(ls.Listen);
+            var s = new Storage();
+            General.s = s;
+            s.SetUp(another);
+
+            var ls = new Listener(General.ws);
+            General.ls = ls;
+            var question = new Thread(ls.Listen);
+            General.question = question;
             question.Start();
 
             General.sc = sc;
             General.ws = ws;
             General.ls = ls;
+
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            Console.CancelKeyPress += OnProcessExit;
+            sc.SendMessage("bot", "HELLO GUYS! IT'S ME, ANAL MOLLY!\n Only Testin'!");
+        }
+
+        public static void OnProcessExit(object sender, EventArgs e)
+        {
+            General.ls.should_listen = false;
+            Storage.Serialize(General.s);
+            while (!General.ls.finished)
+            {
+                
+            }
+            Console.WriteLine("I'm out of here");
+            General.sc.SendMessage("bot", "Shutting down!");
         }
     }
 }

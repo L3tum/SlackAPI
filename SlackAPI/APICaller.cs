@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -34,7 +35,6 @@ namespace SlackAPI
                     question += "&" + VARIABLE.Key + "=" + VARIABLE.Value;
                 }
                 var requestUri = new Uri("https://slack.com/api/" + Method + question + "&pretty=1");
-                Console.WriteLine(requestUri.AbsolutePath);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var response = await client.GetAsync(requestUri);
                 if (response.IsSuccessStatusCode)
@@ -63,10 +63,6 @@ namespace SlackAPI
                     question += "&" + VARIABLE.Key + "=" + VARIABLE.Value;
                 }
                 var requestUri = new Uri("https://slack.com/api/" + Method + question + "&pretty=1");
-                Console.WriteLine(requestUri.AbsoluteUri);
-                TextWriter sw = new StreamWriter("C:/Users/Tom Niklas/Desktop/hahahaha.txt");
-                sw.Write(requestUri.AbsoluteUri);
-                sw.Close();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var response = await client.GetAsync(requestUri);
                 if (response.IsSuccessStatusCode)
@@ -78,88 +74,37 @@ namespace SlackAPI
             }
         }
 
-        /// <summary>
-        ///     Calls Method of API and returns response as object
-        /// </summary>
-        /// <param name="Method"></param>
-        /// <param name="Parameters"></param>
-        /// <returns></returns>
-        public async Task<dynamic> CallMethodObject(string Method, Dictionary<string, dynamic> Parameters)
+        public async Task<Dictionary<String, dynamic>> CallAPI(String uri, Dictionary<String, dynamic> Parameters)
         {
-            Parameters.Add("token", Token);
-            HttpContent hc = new ByteArrayContent(Parameters.ToJSON().ToBytes());
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("https://slack.com/api/");
-                client.DefaultRequestHeaders.Accept.Clear();
+                String question = Parameters.Aggregate(String.Empty, (current, VARIABLE) => (string) (current + ("&" + VARIABLE.Key + "=" + VARIABLE.Value)));
+                var requestUri = new Uri(uri + question);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = await client.PostAsync(Method, hc);
+                var response = await client.GetAsync(requestUri);
                 if (response.IsSuccessStatusCode)
                 {
-                    dynamic ResponseObject = new ExpandoObject();
-                    ResponseObject = new JavaScriptSerializer().Deserialize<ExpandoObject>(response.ToJSON());
-                    return ResponseObject;
+                    var Response = await response.Content.ReadAsStringAsync();
+                    return Response.ToDictionary();
                 }
-                return response.EnsureSuccessStatusCode();
+                return response.EnsureSuccessStatusCode().ToString().ToDictionary();
             }
         }
 
-        /// <summary>
-        ///     Calls Method of API and returns response as the specified object
-        /// </summary>
-        /// <param name="Method"></param>
-        /// <param name="Parameters"></param>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public async Task<object> CallMethodSpecObject(string Method, Dictionary<string, dynamic> Parameters, Type obj)
+        public async Task<dynamic> CallAPIXML(String uri, Dictionary<String, dynamic> Parameters)
         {
-            Parameters.Add("Token", Token);
-            HttpContent hc = new ByteArrayContent(Parameters.ToJSON().ToBytes());
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("https://slack.com/api/");
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = await client.PostAsync(Method, hc);
+                String question = Parameters.Aggregate(String.Empty, (current, VARIABLE) => (string)(current + ("&" + VARIABLE.Key + "=" + VARIABLE.Value)));
+                var requestUri = new Uri(uri + question);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+                var response = await client.GetAsync(requestUri);
                 if (response.IsSuccessStatusCode)
                 {
-                    dynamic ResponseSpecObject = new object();
-                    ResponseSpecObject = new JavaScriptSerializer().Deserialize(response.ToJSON(), obj);
-                    return ResponseSpecObject;
-                }
-                return response.EnsureSuccessStatusCode();
-            }
-        }
-
-        /// <summary>
-        ///     Calls a Method of API and returns it as a dictionary with the specified Type as Value
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="Method"></param>
-        /// <param name="Parameters"></param>
-        /// <param name="ReturnedDic"></param>
-        /// <returns></returns>
-        public async Task<Dictionary<string, dynamic>> CallMethodSpecDic<T>(string Method,
-            Dictionary<string, dynamic> Parameters)
-        {
-            Parameters.Add("Token", Token);
-            HttpContent hc = new ByteArrayContent(Parameters.ToJSON().ToBytes());
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("https://slack.com/api/");
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = await client.PostAsync(Method, hc);
-                if (response.IsSuccessStatusCode)
-                {
-                    var Response = new Dictionary<string, dynamic>();
-                    foreach (var VARIABLE in response.ToJSON().ToDictionary<T>())
-                    {
-                        Response.Add(VARIABLE.Key, VARIABLE.Value);
-                    }
+                    var Response = await response.Content.ReadAsStringAsync();
                     return Response;
                 }
-                return response.EnsureSuccessStatusCode().ToJSON().ToDictionary();
+                return response.EnsureSuccessStatusCode().ToString();
             }
         }
     }

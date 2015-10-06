@@ -11,7 +11,7 @@ namespace SlackAPI
     {
         public WebSocket ws;
         public bool changed = false;
-        public String Response;
+        public String Response = "";
 
         public void CreateWebSocket(String url)
         {

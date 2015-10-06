@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Net.Mime;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using SlackAPI;
 
 namespace SlackBot
 {
-    class Listener
+    public class Listener
     {
         public bool should_listen = true;
         public WebSlack ws;
+        public Dictionary<String, dynamic> myDic = new Dictionary<string, dynamic>();
+        public bool finished;
 
         public Listener(WebSlack ws)
         {
@@ -19,14 +22,41 @@ namespace SlackBot
 
         public void Listen()
         {
-            while (should_listen)
+            try
             {
-                if (ws.changed)
+                while (should_listen)
                 {
-                    Console.WriteLine(ws.Response);
-                    Worker.MessageWorker(ws.Response);
-                    ws.changed = false;
+                    finished = false;
+                    if (ws.changed)
+                    {
+                        myDic = ws.Response.ToDictionary();
+                        if (myDic != null)
+                        {
+                            /*
+                        if (myDic.ContainsKey("text") && myDic.ContainsKey("user") && (General.sc.getUserName(myDic["user"]) != "someone"))
+                        {
+                            String text = myDic["text"];
+                            String user = "Name: " + General.sc.getUserName(myDic["user"]) + ", ID: " + myDic["user"];
+                            String channel = "Name: " + General.sc.getChannelName(myDic["channel"]) + ", ID: " +
+                                             myDic["channel"];
+                            Console.WriteLine("Text: " + text);
+                            Console.WriteLine("User: " + user);
+                            Console.WriteLine("Channel: " + channel);
+                        }
+                         * */
+                            Worker w = new Worker();
+                            ParameterizedThreadStart pst = w.MessageWorker;
+                            Thread myThread = new Thread(pst);
+                            myThread.Start(myDic);
+                        }
+                        ws.changed = false;
+                    }
+                    finished = true;
                 }
+            }
+            catch
+            {
+                
             }
         }
     }

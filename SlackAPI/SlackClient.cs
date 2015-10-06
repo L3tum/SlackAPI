@@ -63,7 +63,7 @@ namespace SlackAPI
             bool returned = false;
             Dictionary<String, dynamic> Params = new Dictionary<string, dynamic>();
             
-            if (Channel.StartsWith("C"))
+            if (Channel.StartsWith("C") || Channel.StartsWith("D"))
             {
                 Params.Add("channel", Channel);
                 Params.Add("text", Message);
@@ -78,6 +78,7 @@ namespace SlackAPI
                 Params.Add("as_user", "true");
                 returned = caller.CallMethodPost("chat.postMessage", Params).Result["ok"];
             }
+            Console.WriteLine("Posted message: " + Message + " to Channel: " + Channel + " with return code: " + returned);
             return returned;
             return false;
         }
@@ -91,7 +92,24 @@ namespace SlackAPI
                     return VARIABLE.Key;
                 }
             }
-            return new KeyNotFoundException().ToString();
+            return "This user is not alive!";
+        }
+
+        public String getChannelName(String id)
+        {
+            foreach (KeyValuePair<string, Dictionary<String, dynamic>> VARIABLE in Channels)
+            {
+                if (VARIABLE.Value["id"] == id)
+                {
+                    return VARIABLE.Key;
+                }
+            }
+            return "This channel has no name!";
+        }
+
+        public String getUserNameForPost(String id)
+        {
+            return ("<@" + id + "|" + getUserName(id) + ">");
         }
     }
 }
