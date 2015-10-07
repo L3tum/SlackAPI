@@ -11,7 +11,7 @@ namespace SlackBot
         public static SlackClient sc;
         public static Listener ls;
         public static Storage s;
-        public static int methodCount = 30;
+        public static int methodCount = 31;
         public delegate void delToCall(System.Collections.Generic.Dictionary<String, dynamic> myDic);
         public static Dictionary<String, delToCall> commands = new Dictionary<string, delToCall>();
         public static Thread question;

@@ -16,7 +16,18 @@ namespace SlackBot
             {
                 try
                 {
-                    sc = new SlackClient(args[0]);
+                    if (args[0].Equals("timo"))
+                    {
+                        sc = new SlackClient("xoxb-5134150563-iZKW7CIodzRbffqVmFmz6m2S");
+                    }
+                    else if (args[0].Equals("lily"))
+                    {
+                        sc = new SlackClient("xoxb-7444634401-UTU2IHZE2kULUWu70hgKV0FA");
+                    }
+                    else
+                    {
+                        sc = new SlackClient(args[0]);
+                    }
                     another = true;
                 }
                 catch
@@ -36,7 +47,7 @@ namespace SlackBot
 
             var s = new Storage();
             General.s = s;
-            s.SetUp(another);
+            s.SetUp(another, sc.myself["name"]);
 
             var ls = new Listener(General.ws);
             General.ls = ls;

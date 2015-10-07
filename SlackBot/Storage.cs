@@ -28,6 +28,12 @@ namespace SlackBot
         public Dictionary<string, dynamic> myDic = new Dictionary<string, dynamic>();
         public Dictionary<string, Poll> polls = new Dictionary<string, Poll>();
 
+        [ScriptIgnore] 
+        public bool another = false;
+
+        [ScriptIgnore] 
+        public String name;
+
         [ScriptIgnore]
         public Thread PollEndThread;
 
@@ -35,15 +41,15 @@ namespace SlackBot
 
         #region setUp
 
-        public void SetUp(bool another)
+        public void SetUp(bool another, String name)
         {
-            if (!another)
+
+            Storage.Deserialize(name, another);
+            if (another)
             {
-                Storage.Deserialize();
-            }
-            else
-            {
-                General.s = new Storage();
+                General.s.privateChannels = new Dictionary<String, Dictionary<String, object>>();
+                General.s.another = true;
+                General.s.name = name;
             }
             foreach (var VARIABLE in General.sc.Channels)
             {
@@ -122,33 +128,66 @@ namespace SlackBot
                 s.PollEndThread.Abort();
             }
             String json = s.ToJSON();
-            TextWriter sw = new StreamWriter(Helper.GetApplicationPath() + "/Storage.xml");
-            sw.Write(json);
-            sw.Close();
+            if (s.another)
+            {
+                TextWriter sw = new StreamWriter(Helper.GetApplicationPath() + "/Storage" + s.name + ".xml");
+                sw.Write(json);
+                sw.Close();
+            }
+            else
+            {
+                TextWriter sw = new StreamWriter(Helper.GetApplicationPath() + "/Storage.xml");
+                sw.Write(json);
+                sw.Close();
+            }
         }
         #endregion
 
         #region Deserialize
-        public static bool Deserialize()
+        public static bool Deserialize(String name, bool another)
         {
-            if (File.Exists(Helper.GetApplicationPath() + "/Storage.xml"))
+            if (another)
             {
-                try
+                if (File.Exists(Helper.GetApplicationPath() + "/Storage.xml"))
                 {
-                    TextReader sr =
-                        new StreamReader(Helper.GetApplicationPath() + "/Storage.xml");
-                    String json = sr.ReadLine();
-                    sr.Close();
-                    General.s = (Storage) json.ToObject<Storage>();
-                    return true;
+                    try
+                    {
+                        TextReader sr =
+                            new StreamReader(Helper.GetApplicationPath() + "/Storage.xml");
+                        String json = sr.ReadLine();
+                        sr.Close();
+                        General.s = (Storage) json.ToObject<Storage>();
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                        File.Delete(Helper.GetApplicationPath() + "/Storage.xml");
+                    }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                    File.Delete(Helper.GetApplicationPath() + "/Storage.xml");
-                }
+                return false;
             }
-            return false;
+            else
+            {
+                if (File.Exists(Helper.GetApplicationPath() + "/Storage" + name + ".xml"))
+                {
+                    try
+                    {
+                        TextReader sr =
+                            new StreamReader(Helper.GetApplicationPath() + "/Storage" + name + ".xml");
+                        String json = sr.ReadLine();
+                        sr.Close();
+                        General.s = (Storage)json.ToObject<Storage>();
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                        File.Delete(Helper.GetApplicationPath() + "/Storage" + name + ".xml");
+                    }
+                }
+                return false;
+            }
         }
         #endregion
     }

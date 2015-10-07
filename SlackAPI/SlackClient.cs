@@ -29,10 +29,6 @@ namespace SlackAPI
                 {
                     if (VARIABLE != null)
                     {
-                        foreach (string VAR in VARIABLE.Keys)
-                        {
-                            Console.WriteLine(VAR);
-                        }
                         Channels.Add(VARIABLE["name"].ToString(), VARIABLE);
                     }
                 }

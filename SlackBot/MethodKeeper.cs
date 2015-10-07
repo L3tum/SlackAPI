@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using SlackAPI;
 using WebSocketSharp;
 
@@ -11,6 +17,7 @@ namespace SlackBot
 {
     public class MethodKeeper
     {
+        #region Responses
 
         //*addResponse Trigger|Reply
         public void addResponse(Dictionary<String, dynamic> myDic)
@@ -123,67 +130,9 @@ namespace SlackBot
             }
         }
 
+        #endregion
 
-#if GOOGLE || ALL
-
-        //*google WORDS
-        public void google(Dictionary<String, dynamic> myDic)
-        {
-            String[] tmp = ((String) myDic["text"]).Split();
-            String s = "<http://lmgtfy.com/?q=";
-            for (int i = 1; i < tmp.Length; i++)
-            {
-                s += tmp[i] + "+";
-            }
-            s = s.Remove(s.Length - 1, 1);
-            s += ">";
-            Console.WriteLine("Sent link: " + s + " because " + General.sc.getUserName(myDic["user"]) +
-                              " entered it!");
-            Dictionary<String, dynamic> myDict = new Dictionary<string, dynamic>
-            {
-                {"unfurl_links", "true"},
-                {"channel", myDic["channel"]},
-                {"as_user", "true"},
-                {"text", s},
-                {"token", General.sc.Token}
-            };
-            Console.WriteLine(General.sc.caller.CallMethodPost("chat.postMessage", myDict).Result["ok"]);
-        }
-#endif
-
-        //*writeTo:Name:Message
-        public void writeTo(Dictionary<String, dynamic> myDic)
-        {
-            if (General.s.permission[myDic["user"]] >= 3)
-            {
-                String[] tmp = ((String) myDic["text"]).Split(':');
-                tmp[0] = tmp[0].Trim();
-                tmp[1] = tmp[1].Trim();
-                for (int i = 3; i < tmp.Length; i++)
-                {
-                    tmp[2] += tmp[i];
-                }
-                if (!General.sc.Channels.ContainsKey(tmp[1]) &&
-                    !General.s.privateChannels.ContainsKey(General.sc.Users[tmp[1]]["id"]))
-                {
-                    Dictionary<String, dynamic> paramse = new Dictionary<string, dynamic>();
-                    paramse.Add("user", General.sc.Users[tmp[1]]["id"]);
-                    Dictionary<String, dynamic> something =
-                        General.sc.caller.CallMethodPost("im.open", paramse).Result;
-                    General.s.privateChannels.Add(General.sc.Users[tmp[1]]["id"], something["channel"]);
-                }
-                if (General.sc.Channels.ContainsKey(tmp[1]))
-                {
-                    General.sc.SendMessage(
-                        ((String) General.sc.Channels[tmp[1]]["id"]), tmp[2]);
-                }
-                else
-                {
-                    General.sc.SendMessage(((String) General.s.privateChannels[General.sc.Users[tmp[1]]["id"]]["id"]),
-                        tmp[2]);
-                }
-            }
-        }
+        #region permissions
 
         //*askPermission OR *askPermission:Name
         public void askPermission(Dictionary<String, dynamic> myDic)
@@ -230,8 +179,8 @@ namespace SlackBot
                 if (General.s.permission.ContainsKey(user))
                 {
                     Console.WriteLine(General.sc.getUserName(user +
-                                      " asked for his permissionlevel, which is: " +
-                                      General.s.permission[user]));
+                                                             " asked for his permissionlevel, which is: " +
+                                                             General.s.permission[user]));
                     General.sc.SendMessage(channel,
                         General.sc.getUserNameForPost(user) + ": your permissionlevel is: " +
                         General.s.permission[user]);
@@ -333,6 +282,10 @@ namespace SlackBot
             }
         }
 
+        #endregion
+
+        #region afk
+
 #if AFK || ALL
 
         //*afk
@@ -364,6 +317,10 @@ namespace SlackBot
             }
         }
 #endif
+
+        #endregion
+
+        #region save/load
 
         //*save
         public void save(Dictionary<String, dynamic> myDic)
@@ -399,7 +356,7 @@ namespace SlackBot
             {
                 if (General.s.permission[myDic["user"]] >= 2)
                 {
-                    Console.WriteLine("Storage loaded: " + Storage.Deserialize());
+                    Console.WriteLine("Storage loaded: " + Storage.Deserialize(General.s.name, General.s.another));
                     General.sc.SendMessage(myDic["channel"],
                         General.sc.getUserNameForPost(myDic["user"]) + ": Storage has been loaded!");
                 }
@@ -417,7 +374,10 @@ namespace SlackBot
             }
         }
 
+        #endregion
+
         #region pmRecieved
+
         /*
         public static void pmRecieved(Dictionary<String, dynamic> myDic)
         {
@@ -437,7 +397,10 @@ namespace SlackBot
             }
         }
          * */
-        #endregion 
+
+        #endregion
+
+        #region Evals
 
 #if EVAL || ALL
         //USAGE: 
@@ -454,7 +417,7 @@ namespace SlackBot
                 }
                 else
                 {
-                    General.s.evals.Add(things[1], new List<Eval>(){ somesEval});
+                    General.s.evals.Add(things[1], new List<Eval>() {somesEval});
                 }
                 General.sc.SendMessage(myDic["channel"], "Eval added!");
             }
@@ -486,7 +449,10 @@ namespace SlackBot
         //*listResponses
         public void listCodeResponses(Dictionary<String, dynamic> myDic)
         {
-            String post = General.s.evals.Aggregate("", (current1, keyValuePair) => keyValuePair.Value.Aggregate(current1, (current, eval) => current + (keyValuePair.Key + ":" + eval.desc + "\n")));
+            String post = General.s.evals.Aggregate("",
+                (current1, keyValuePair) =>
+                    keyValuePair.Value.Aggregate(current1,
+                        (current, eval) => current + (keyValuePair.Key + ":" + eval.desc + "\n")));
             if (post.IsNullOrEmpty())
             {
                 post = "No responses!";
@@ -494,7 +460,11 @@ namespace SlackBot
             General.sc.SendMessage(myDic["channel"], post);
         }
 #endif
-        
+
+        #endregion
+
+        #region restart/stop
+
         //*restart OR *restart:Token
         public void restart(Dictionary<String, dynamic> myDic)
         {
@@ -520,7 +490,6 @@ namespace SlackBot
                         Process.Start(Helper.GetApplicationPath() + "/SlackBot.exe");
                     }
                     p.Kill();
-
                 }
                 else
                 {
@@ -534,8 +503,8 @@ namespace SlackBot
         public void stopItPl0x(Dictionary<String, dynamic> myDic)
         {
             if (General.s.permission.ContainsKey(myDic["user"])
-                            ? General.s.permission[myDic["user"]] >= 10
-                            : null)
+                ? General.s.permission[myDic["user"]] >= 10
+                : null)
             {
                 Console.WriteLine("User: " + General.sc.getUserName(myDic["user"]) +
                                   " wants to stop the process!");
@@ -549,11 +518,28 @@ namespace SlackBot
             }
         }
 
+        public void start(Dictionary<String, dynamic> myDic)
+        {
+            if (((String) myDic["text"]).Contains(":"))
+            {
+                String[] things = ((String) myDic["text"]).Split(':');
+                Process.Start(Helper.GetApplicationPath() + "/SlackBot.exe", things[1]);
+            }
+            else
+            {
+                Process.Start(Helper.GetApplicationPath() + "/SlackBot.exe");
+            }
+        }
+
+        #endregion
+
+        #region random
+
         //*randomInsult OR *randomInsult:NameToInsult
         public void randomInsult(Dictionary<String, dynamic> myDic)
         {
             Dictionary<String, dynamic> newDic = General.sc.caller.CallAPI("http://quandyfactory.com/insult/json",
-                            new Dictionary<string, dynamic>()).Result;
+                new Dictionary<string, dynamic>()).Result;
             Console.WriteLine(General.sc.getUserName(myDic["user"]) + " requested a word and got " +
                               newDic["insult"]);
             if (((String) myDic["text"]).Contains(":"))
@@ -567,8 +553,8 @@ namespace SlackBot
         //*randomWord
         public void randomWord(Dictionary<String, dynamic> myDic)
         {
-            String newDic = General.sc.caller.CallAPIXML("http://randomword.setgetgo.com/get.php",
-                            new Dictionary<string, dynamic>()).Result;
+            String newDic = General.sc.caller.CallAPIString("http://randomword.setgetgo.com/get.php",
+                new Dictionary<string, dynamic>()).Result;
             Console.WriteLine(General.sc.getUserName(myDic["user"]) + " requested a word and got " +
                               newDic);
             General.sc.SendMessage(myDic["channel"], newDic);
@@ -580,24 +566,141 @@ namespace SlackBot
             try
             {
                 String xml =
-                    General.sc.caller.CallAPIXML(
+                    General.sc.caller.CallAPIString(
                         "http://services.aonaware.com/DictService/DictService.asmx/Define?word=" +
                         (((String) myDic["text"]).Split()[1]), new Dictionary<string, dynamic>()).Result;
                 xml = xml.GetXMLElement("WordDefinition");
                 xml = xml.Normalize();
                 xml = xml.Replace("&", "");
-                xml = System.Text.RegularExpressions.Regex.Replace(xml,@"\s+"," ");
+                xml = System.Text.RegularExpressions.Regex.Replace(xml, @"\s+", " ");
                 //Debugger.Break();
                 Console.WriteLine("Got definition of the word " + (((String) myDic["text"]).Split()[1]));
                 General.sc.SendMessage(myDic["channel"], xml);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
             }
         }
 
+#if GOOGLE || ALL
+
+        //*google WORDS
+        public void google(Dictionary<String, dynamic> myDic)
+        {
+            String[] tmp = ((String) myDic["text"]).Split();
+            String s = "<http://lmgtfy.com/?q=";
+            for (int i = 1; i < tmp.Length; i++)
+            {
+                s += tmp[i] + "+";
+            }
+            s = s.Remove(s.Length - 1, 1);
+            s += ">";
+            Console.WriteLine("Sent link: " + s + " because " + General.sc.getUserName(myDic["user"]) +
+                              " entered it!");
+            Dictionary<String, dynamic> myDict = new Dictionary<string, dynamic>
+            {
+                {"unfurl_links", "true"},
+                {"channel", myDic["channel"]},
+                {"as_user", "true"},
+                {"text", s},
+                {"token", General.sc.Token}
+            };
+            Console.WriteLine(General.sc.caller.CallMethodPost("chat.postMessage", myDict).Result["ok"]);
+        }
+#endif
+
+        //*writeTo:Name:Message
+        public void writeTo(Dictionary<String, dynamic> myDic)
+        {
+            if (General.s.permission[myDic["user"]] >= 3)
+            {
+                String[] tmp = ((String) myDic["text"]).Split(':');
+                tmp[0] = tmp[0].Trim();
+                tmp[1] = tmp[1].Trim();
+                for (int i = 3; i < tmp.Length; i++)
+                {
+                    tmp[2] += tmp[i];
+                }
+                if (!General.sc.Channels.ContainsKey(tmp[1]) &&
+                    !General.s.privateChannels.ContainsKey(General.sc.Users[tmp[1]]["id"]))
+                {
+                    Dictionary<String, dynamic> paramse = new Dictionary<string, dynamic>();
+                    paramse.Add("user", General.sc.Users[tmp[1]]["id"]);
+                    Dictionary<String, dynamic> something =
+                        General.sc.caller.CallMethodPost("im.open", paramse).Result;
+                    General.s.privateChannels.Add(General.sc.Users[tmp[1]]["id"], something["channel"]);
+                }
+                if (General.sc.Channels.ContainsKey(tmp[1]))
+                {
+                    General.sc.SendMessage(
+                        ((String) General.sc.Channels[tmp[1]]["id"]), tmp[2]);
+                }
+                else
+                {
+                    General.sc.SendMessage(((String) General.s.privateChannels[General.sc.Users[tmp[1]]["id"]]["id"]),
+                        tmp[2]);
+                }
+            }
+        }
+
+        public void mirror(Dictionary<String, dynamic> myDic)
+        {
+            String[] things = ((String) myDic["text"]).Split(':');
+            if (!File.Exists(Helper.GetApplicationPath() + "/" + things[1] + ".jpg"))
+            {
+                Bitmap bmp = new Bitmap(1920, 780);
+                RectangleF rectf = new RectangleF(0, 0, bmp.Width, bmp.Height);
+
+                // Create graphic object that will draw onto the bitmap
+                Graphics g = Graphics.FromImage(bmp);
+
+                g.FillRectangle(
+                    Brushes.White, 0, 0, bmp.Width, bmp.Height);
+
+                // Ensure the best possible quality rendering
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                // The smoothing mode specifies whether lines, curves, and the edges of filled areas use smoothing (also called antialiasing). One exception is that path gradient brushes do not obey the smoothing mode. Areas filled using a PathGradientBrush are rendered the same way (aliased) regardless of the SmoothingMode property.
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+                // The interpolation mode determines how intermediate values between two endpoints are calculated.
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                // Use this property to specify either higher quality, slower rendering, or lower quality, faster rendering of the contents of this Graphics object.
+                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit; // This one is important
+
+                // Create string formatting options (used for alignment)
+                StringFormat format = new StringFormat()
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center
+                };
+
+                // Draw the text onto the image
+                g.DrawString(things[1], new Font("Tahoma", 80), Brushes.Black, rectf, format);
+
+                // Flush all graphics changes to the bitmap
+                g.Flush();
+
+                bmp.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                SizeF size =g.MeasureString(things[1], new Font("Tahoma", 80));
+
+                bmp = bmp.Clone(new Rectangle((int)(bmp.Width / 2 - size.Width), (int)(bmp.Height / 2 - size.Height), (int)size.Width * 2 + 10, (int)size.Height * 2 + 5), bmp.PixelFormat);
+
+                bmp.Save(Helper.GetApplicationPath() + "/" + things[1] + ".jpg", ImageFormat.Jpeg);
+            }
+            String path = Helper.GetApplicationPath() + "/" + things[1] + ".jpg";
+
+            Task<String> s = General.sc.caller.SlackSendFile(path, myDic["channel"], things[1] + ".jpg");
+
+            //File.Delete((Helper.GetApplicationPath() + "/" + newDic + ".bmp"));
+        }
+
+        #endregion
+
         #region Polls
+
         //*addPoll|MyName|MyDescription|06/07/2008 5:12:12 PM|Choice1,Choice2,Choice3
         public void addPoll(Dictionary<String, dynamic> myDic)
         {
@@ -609,7 +712,8 @@ namespace SlackBot
                 General.s.polls.Add(things[1].Trim(),
                     new Poll(things[1].Trim(), things[2], things[3], myDic["user"], choices));
                 General.sc.SendMessage(myDic["channel"],
-                    General.sc.getUserNameForPost(myDic["user"]) + " poll started! Expire date: " + General.s.polls[things[1]].dt);
+                    General.sc.getUserNameForPost(myDic["user"]) + " poll started! Expire date: " +
+                    General.s.polls[things[1]].dt);
                 General.s.setNextPoll();
             }
             else
@@ -643,7 +747,8 @@ namespace SlackBot
             String[] things = ((String) myDic["text"]).Split(':');
             if (General.s.polls.ContainsKey(things[1]) && General.s.polls[things[1]].isRunning)
             {
-                if (General.s.polls[things[1]].votes.ContainsKey((things[2].Trim())) && !General.s.polls[things[1]].usersAlreadyVotedID.Contains(myDic["user"]))
+                if (General.s.polls[things[1]].votes.ContainsKey((things[2].Trim())) &&
+                    !General.s.polls[things[1]].usersAlreadyVotedID.Contains(myDic["user"]))
                 {
                     General.s.polls[things[1]].votes[(things[2].Trim())]++;
                     General.s.polls[things[1]].usersAlreadyVotedID.Add(myDic["user"]);
@@ -651,7 +756,8 @@ namespace SlackBot
                 else
                 {
                     General.sc.SendMessage(myDic["channel"],
-                    General.sc.getUserNameForPost(myDic["user"]) + " no such choice exists or you have already voted!");
+                        General.sc.getUserNameForPost(myDic["user"]) +
+                        " no such choice exists or you have already voted!");
                 }
             }
             else
@@ -670,6 +776,10 @@ namespace SlackBot
                 if (things[1].Equals("true"))
                 {
                     String result = General.s.polls.Keys.Aggregate("", (current, key) => current + (key + "\n"));
+                    if (result.IsNullOrEmpty())
+                    {
+                        result = "No polls!";
+                    }
                     General.sc.SendMessage(myDic["channel"], result);
                 }
                 else
@@ -686,7 +796,7 @@ namespace SlackBot
             else
             {
                 String result = General.s.polls.Where(poll => poll.Value.isRunning)
-                        .Aggregate("", (current, poll) => current + (poll.Key + "\n"));
+                    .Aggregate("", (current, poll) => current + (poll.Key + "\n"));
                 if (result.IsNullOrEmpty())
                 {
                     result = "No running polls!";
@@ -735,7 +845,7 @@ namespace SlackBot
         //*getVoterCount:NameOfPoll
         public void getVoterCount(Dictionary<String, dynamic> myDic)
         {
-            String[] things = ((String)myDic["text"]).Split(':');
+            String[] things = ((String) myDic["text"]).Split(':');
             if (General.s.polls.ContainsKey(things[1]))
             {
                 General.sc.SendMessage(myDic["channel"], General.s.polls[things[1]].usersAlreadyVotedID.Count.ToString());
@@ -745,12 +855,13 @@ namespace SlackBot
         //*getPollTime:NameOfPoll
         public void getPollTime(Dictionary<String, dynamic> myDic)
         {
-            String[] things = ((String)myDic["text"]).Split(':');
+            String[] things = ((String) myDic["text"]).Split(':');
             if (General.s.polls.ContainsKey(things[1]))
             {
                 TimeSpan ts = (General.s.polls[things[1]].dt) - DateTime.Now;
                 ts = ts.Add(new TimeSpan(0, 2, 0, 0));
-                General.sc.SendMessage(myDic["channel"], ts.Days + " days, " + ts.Hours + " hours, " + ts.Minutes + " minutes!");
+                General.sc.SendMessage(myDic["channel"],
+                    ts.Days + " days, " + ts.Hours + " hours, " + ts.Minutes + " minutes!");
             }
         }
 
@@ -762,10 +873,11 @@ namespace SlackBot
             {
                 General.s.polls[things[1]].isRunning = false;
                 General.s.setNextPoll();
-                General.sc.SendMessage(myDic["channel"], General.sc.getUserNameForPost(myDic["user"]) + ": Poll stopped!");
+                General.sc.SendMessage(myDic["channel"],
+                    General.sc.getUserNameForPost(myDic["user"]) + ": Poll stopped!");
             }
         }
 
-        #endregion 
+        #endregion
     }
 }

@@ -2,6 +2,9 @@
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,7 +25,6 @@ namespace SlackBot
 
         public static void PollEndDeterminer()
         {
-            Timer t = new Timer();
             while (((endTime - DateTime.Now) > TimeSpan.Zero))
             {
                 Thread.Sleep(TimeSpan.FromMinutes(1));
@@ -47,7 +49,10 @@ namespace SlackBot
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = false;
             TextWriter tw = new StreamWriter("C:/Users/Tom Niklas/Desktop/namee.txt");
-            String name = ((String) General.sc.caller.CallAPIXML("http://randomword.setgetgo.com/get.php", new Dictionary<string, dynamic>()).Result).Trim();
+            String name =
+                ((String)
+                    General.sc.caller.CallAPIString("http://randomword.setgetgo.com/get.php",
+                        new Dictionary<string, dynamic>()).Result).Trim();
             tw.WriteLine(Helper.GetApplicationPath() + "/" + name + ".dll");
             tw.Close();
             cp.OutputAssembly = Helper.GetApplicationPath() + "/" + name + ".dll";
@@ -68,13 +73,45 @@ namespace SlackBot
 
                 foreach (CompilerError error in cr.Errors)
                 {
-                    sb.AppendLine(String.Format("Error ({0}): {1} : {2} : {3}", error.ErrorNumber, error.ErrorText, error.Line, error.Column));
+                    sb.AppendLine(String.Format("Error ({0}): {1} : {2} : {3}", error.ErrorNumber, error.ErrorText,
+                        error.Line, error.Column));
                 }
 
                 throw new InvalidOperationException(sb.ToString());
             }
             String path = (((cr.CompiledAssembly.Location.Replace("file:///", "")).Replace("\\", "/")).Trim());
             return new Eval(print, path, desc);
+        }
+        /// <summary>
+        /// Resize the image to the specified width and height.
+        /// </summary>
+        /// <param name="image">The image to resize.</param>
+        /// <param name="width">The width to resize to.</param>
+        /// <param name="height">The height to resize to.</param>
+        /// <returns>The resized image.</returns>
+        public static Bitmap ResizeImage(Image image, int width, int height)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
         }
     }
 }

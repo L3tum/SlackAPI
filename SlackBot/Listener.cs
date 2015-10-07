@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -44,6 +46,36 @@ namespace SlackBot
                             Console.WriteLine("Channel: " + channel);
                         }
                          * */
+
+
+                            /*
+                            String text = "";
+                            foreach (KeyValuePair<string, dynamic> keyValuePair in myDic)
+                            {
+                                text += keyValuePair.Key + ":";
+                                if (keyValuePair.Value is Dictionary<String, object>)
+                                {
+                                    foreach (KeyValuePair<String, object> o in keyValuePair.Value)
+                                    {
+                                        text += o.Key + ":" + o.Value + "\n";
+                                    }
+                                }
+                                else
+                                {
+                                    text += keyValuePair.Value + "\n";
+                                }
+                             * */
+                            //}
+                        /*
+                            if (myDic.ContainsKey("file"))
+                            {
+                                TextWriter tw = new StreamWriter("C:/Users/Tom Niklas/Desktop/jadasjdbajh.txt");
+                                tw.Write(text);
+                                tw.Close();
+                            }
+                           Console.WriteLine(text);
+                         * */
+
                             Worker w = new Worker();
                             ParameterizedThreadStart pst = w.MessageWorker;
                             Thread myThread = new Thread(pst);
