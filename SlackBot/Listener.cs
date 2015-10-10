@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using SlackAPI;
+using User = AIMLbot.User;
 
 namespace SlackBot
 {
@@ -34,6 +35,8 @@ namespace SlackBot
                         myDic = ws.Response.ToDictionary();
                         if (myDic != null)
                         {
+                            #region Test
+
                             /*
                         if (myDic.ContainsKey("text") && myDic.ContainsKey("user") && (General.sc.getUserName(myDic["user"]) != "someone"))
                         {
@@ -66,29 +69,46 @@ namespace SlackBot
                                 }
                              * */
                             //}
-                        /*
-                            if (myDic.ContainsKey("file"))
-                            {
-                                TextWriter tw = new StreamWriter("C:/Users/Tom Niklas/Desktop/jadasjdbajh.txt");
-                                tw.Write(text);
-                                tw.Close();
-                            }
-                           Console.WriteLine(text);
-                         * */
+                            /*
+                                if (myDic.ContainsKey("file"))
+                                {
+                                    TextWriter tw = new StreamWriter("C:/Users/Tom Niklas/Desktop/jadasjdbajh.txt");
+                                    tw.Write(text);
+                                    tw.Close();
+                                }
+                               Console.WriteLine(text);
+                             * */
+
+                            #endregion
 
                             Worker w = new Worker();
                             ParameterizedThreadStart pst = w.MessageWorker;
                             Thread myThread = new Thread(pst);
                             myThread.Start(myDic);
+                            ws.changed = false;
+                            if (myDic.ContainsKey("text"))
+                            {
+                                foreach (KeyValuePair<string, User> keyValuePair in General.active_users)
+                                {
+                                    if (((String) myDic["text"]).StartsWith(keyValuePair.Key))
+                                    {
+                                        General.sc.SendMessage(myDic["channel"],
+                                            keyValuePair.Value.bot.Chat(
+                                                ((((String) myDic["text"]).Replace(keyValuePair.Key + ":", "")).Trim()),
+                                                keyValuePair.Value.UserID).Output);
+                                    }
+                                }
+                            }
                         }
                         ws.changed = false;
                     }
                     finished = true;
                 }
             }
-            catch
+            catch(Exception e)
             {
-                
+                Console.WriteLine(e.ToString());
+                Console.ReadLine();
             }
         }
     }

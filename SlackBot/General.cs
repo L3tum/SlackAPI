@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using SlackAPI;
+using User = AIMLbot.User;
 
 namespace SlackBot
 {
@@ -11,9 +12,7 @@ namespace SlackBot
         public static SlackClient sc;
         public static Listener ls;
         public static Storage s;
-        public static int methodCount = 31;
-        public delegate void delToCall(System.Collections.Generic.Dictionary<String, dynamic> myDic);
-        public static Dictionary<String, delToCall> commands = new Dictionary<string, delToCall>();
         public static Thread question;
+        public static Dictionary<String,AIMLbot.User> active_users = new Dictionary<string, User>();
     }
 }

@@ -47,7 +47,7 @@ namespace SlackBot
 
             var s = new Storage();
             General.s = s;
-            s.SetUp(another, sc.myself["name"]);
+            s.SetUp();
 
             var ls = new Listener(General.ws);
             General.ls = ls;
@@ -72,6 +72,7 @@ namespace SlackBot
             {
                 
             }
+            General.question.Abort();
             Console.WriteLine("I'm out of here");
             General.sc.SendMessage("bot", "Shutting down!");
         }
