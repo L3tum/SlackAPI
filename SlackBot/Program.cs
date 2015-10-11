@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using SlackAPI;
@@ -58,6 +59,16 @@ namespace SlackBot
             General.sc = sc;
             General.ws = ws;
             General.ls = ls;
+
+            if (!File.Exists(Helper.GetApplicationPath() + "/SlackBotBackup.exe"))
+            {
+                String things = Helper.GetApplicationPath().Remove(Helper.GetApplicationPath().Length - 16, 16);
+                File.Copy(things + "Backup/bin/Debug/SlackBotBackup.exe", Helper.GetApplicationPath() + "/SlackBotBackup.exe");
+            }
+            if (Process.GetProcessesByName("SlackBotBackup").Length == 0)
+            {
+                Process.Start(Helper.GetApplicationPath() + "/SlackBotBackup.exe");
+            }
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             Console.CancelKeyPress += OnProcessExit;

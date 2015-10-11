@@ -6,21 +6,60 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackAPI", "SlackAPI\SlackAPI.csproj", "{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackBot", "SlackBot\SlackBot.csproj", "{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98} = {DDECB61F-FEA4-4A10-BCF9-767E389D3E98}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackBotBackup", "Backup\SlackBotBackup.csproj", "{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoreSoft.MathExpressions", "LoreSoft.MathExpressions\LoreSoft.MathExpressions.csproj", "{B6813448-FCE2-429C-81B5-9722FEA839B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Release|x64.ActiveCfg = Release|Any CPU
+		{5574A4A6-BE0C-448A-97D8-FBA4B8897EDF}.Release|x86.ActiveCfg = Release|Any CPU
 		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Debug|Any CPU.ActiveCfg = ALL|Any CPU
 		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Debug|Any CPU.Build.0 = ALL|Any CPU
+		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Release|x64.ActiveCfg = Release|Any CPU
+		{121CA581-B0D5-4ADB-BCE8-6BDA521058A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Release|x64.ActiveCfg = Release|Any CPU
+		{DDECB61F-FEA4-4A10-BCF9-767E389D3E98}.Release|x86.ActiveCfg = Release|Any CPU
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Debug|x64.ActiveCfg = Debug|x64
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Debug|x64.Build.0 = Debug|x64
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Debug|x86.ActiveCfg = Debug|x86
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Debug|x86.Build.0 = Debug|x86
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Release|x64.ActiveCfg = Release|x64
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Release|x64.Build.0 = Release|x64
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Release|x86.ActiveCfg = Release|x86
+		{B6813448-FCE2-429C-81B5-9722FEA839B8}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -8,11 +9,15 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using AIMLbot;
+using IronPython.Hosting;
+using LoreSoft.MathExpressions;
+using Microsoft.Scripting.Hosting;
 using SlackAPI;
 using WebSocketSharp;
 
@@ -22,6 +27,7 @@ namespace SlackBot
     {
         #region Responses
 
+        #region addResponse
         [Description("*addResponse Trigger|Reply \nAdds a response to the list of responses.")]
         public void addResponse(Dictionary<String, dynamic> myDic)
         {
@@ -49,7 +55,9 @@ namespace SlackBot
                 General.sc.getUserNameForPost(myDic["user"]) + ": Response: " + tmps[0] + "," + tmps[1] +
                 " added!");
         }
+        #endregion 
 
+        #region removeResponse
         [Description("*removeResponse:Response \nRemoves a response from the list of responses.")]
         public void removeResponse(Dictionary<String, dynamic> myDic)
         {
@@ -86,7 +94,9 @@ namespace SlackBot
                 General.s.permission.Add(myDic["user"], 0);
             }
         }
+        #endregion 
 
+        #region switchResponse
         [Description("*switchResponse \nSwitches if '*' is needed to trigger a response.")]
         public void switchResponse(Dictionary<String, dynamic> myDic)
         {
@@ -132,11 +142,13 @@ namespace SlackBot
                 General.s.permission.Add(myDic["user"], 0);
             }
         }
+        #endregion 
 
         #endregion
 
         #region permissions
 
+        #region askPermission
         [Description("*askPermission OR *askPermission:Name \nReturns your or the 'Name's permissionlevel.")]
         public void askPermission(Dictionary<String, dynamic> myDic)
         {
@@ -200,7 +212,9 @@ namespace SlackBot
                 }
             }
         }
+        #endregion 
 
+        #region setPermission
         [Description("*setPermission:Name:Permissionlevel \nSets permissionlevel of 'Name' to 'Permissionlevel.")]
         public void setPermission(Dictionary<String, dynamic> myDic)
         {
@@ -304,6 +318,7 @@ namespace SlackBot
                 General.s.permission.Add(myDic["user"], 0);
             }
         }
+        #endregion 
 
         #endregion
 
@@ -311,6 +326,7 @@ namespace SlackBot
 
 #if AFK || ALL
 
+        #region affk
         [Description("*afk \nSets you to be afk.")]
         public void afk(Dictionary<String, dynamic> myDic)
         {
@@ -324,7 +340,9 @@ namespace SlackBot
                 Console.WriteLine(General.sc.getUserName(myDic["user"]) + " is now afk!");
             }
         }
+        #endregion 
 
+        #region back
         [Description("*back \nSets you to be active again.")]
         public void back(Dictionary<String, dynamic> myDic)
         {
@@ -339,12 +357,14 @@ namespace SlackBot
                     General.sc.getUserNameForPost(myDic["user"]) + ": You were never afk!");
             }
         }
+        #endregion 
 #endif
 
         #endregion
 
         #region save/load
 
+        #region save
         [Description("*save \nSaves the Storage.")]
         public void save(Dictionary<String, dynamic> myDic)
         {
@@ -371,7 +391,9 @@ namespace SlackBot
                 General.s.permission.Add(myDic["user"], 0);
             }
         }
-
+        #endregion 
+        
+        #region load
         [Description("*load \nLoads the Storage.")]
         public void load(Dictionary<String, dynamic> myDic)
         {
@@ -396,36 +418,14 @@ namespace SlackBot
                 General.s.permission.Add(myDic["user"], 0);
             }
         }
-
-        #endregion
-
-        #region pmRecieved
-
-        /*
-        public static void pmRecieved(Dictionary<String, dynamic> myDic)
-        {
-            if (((String) myDic["channel"]).StartsWith("D") &&
-                !(General.sc.getUserName(myDic["user"]).Equals("letum")) &&
-                !(General.sc.getUserName(myDic["user"]).Equals("someone")))
-            {
-                if (!General.s.privateChannels.ContainsKey(General.sc.Users["letum"]["id"]))
-                {
-                    Dictionary<String, dynamic> paramse = new Dictionary<string, dynamic>();
-                    paramse.Add("user", General.sc.Users["letum"]["id"]);
-                    Dictionary<String, dynamic> something = General.sc.caller.CallMethodPost("im.open", paramse).Result;
-                    General.s.privateChannels.Add(General.sc.Users["letum"]["id"], something["channel"]);
-                }
-                General.sc.SendMessage(((String) General.s.privateChannels[General.sc.Users["letum"]["id"]]["id"]), (String) myDic["text"]);
-                General.sc.SendMessage(((String) General.s.privateChannels[General.sc.Users["letum"]["id"]]["id"]), " by: " + General.sc.getUserName(myDic["user"]));
-            }
-        }
-         * */
+        #endregion 
 
         #endregion
 
         #region Evals
 
 #if EVAL || ALL
+        #region addCodeResponse 
         [Description("*addCodeResponse§NameOfEval§Coooode§printToChannel(true/false?)§desc \nCreates an Assembly with 'Coooode' inside it and runs it when 'NameOfEval' is entered in a channel.")]
         public void addCodeResponse(Dictionary<String, dynamic> myDic)
         {
@@ -452,7 +452,9 @@ namespace SlackBot
                     General.sc.getUserNameForPost(myDic["user"]) + ": you entered the command incorrectly!");
             }
         }
+        #endregion 
 
+        #region removeCodeResponse
         [Description("*removeCodeResponse:NameOfEval \nRemoves Assemblies with the trigger 'NameOfEval'.")]
         public void removeCodeResponse(Dictionary<String, dynamic> myDic)
         {
@@ -467,7 +469,9 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"], "Response removed!");
             }
         }
+        #endregion 
 
+        #region listCodeResponses
         [Description("*listCodeResponses \nLists all Assemblies.")]
         public void listCodeResponses(Dictionary<String, dynamic> myDic)
         {
@@ -481,12 +485,24 @@ namespace SlackBot
             }
             General.sc.SendMessage(myDic["channel"], post);
         }
+        #endregion 
+
+        #region runPython
+        [Description("*runPython§Something")]
+        public void runPython(Dictionary<String, dynamic> myDic)
+        {
+            String[] things = ((String) myDic["text"]).Split('§');
+            ScriptEngine engine = Python.CreateEngine();
+            General.sc.SendMessage(myDic["channel"], engine.Execute(things[1]));
+        }
+        #endregion 
 #endif
 
         #endregion
 
         #region restart/stop
 
+        #region restart
         [Description("*restart OR *restart:Token \nRestarts the bot and logs in with 'Token' if it's given.")]
         public void restart(Dictionary<String, dynamic> myDic)
         {
@@ -520,7 +536,9 @@ namespace SlackBot
                 }
             }
         }
+        #endregion 
 
+        #region stop
         [Description("*stopItPl0x \nStops the bot.")]
         public void stopItPl0x(Dictionary<String, dynamic> myDic)
         {
@@ -539,7 +557,9 @@ namespace SlackBot
                 Console.WriteLine(General.sc.getUserName(myDic["user"]) + " tried to stop the process!");
             }
         }
+        #endregion 
 
+        #region start
         [Description("*start OR *start:Token \nStarts another instance of the currently running bot or with 'Token'.")]
         public void start(Dictionary<String, dynamic> myDic)
         {
@@ -553,11 +573,13 @@ namespace SlackBot
                 Process.Start(Helper.GetApplicationPath() + "/SlackBot.exe");
             }
         }
+        #endregion 
 
         #endregion
 
         #region random
 
+        #region randomInsult
         [Description("*randomInsult OR *randomInsult:NameToInsult \nReturns a random insult with the 'NameToInsult' if it's given.")]
         public void randomInsult(Dictionary<String, dynamic> myDic)
         {
@@ -572,7 +594,9 @@ namespace SlackBot
             }
             General.sc.SendMessage(myDic["channel"], newDic["insult"]);
         }
+        #endregion 
 
+        #region randomWord
         [Description("*randomWord \nRetuns a random word.")]
         public void randomWord(Dictionary<String, dynamic> myDic)
         {
@@ -582,7 +606,9 @@ namespace SlackBot
                               newDic);
             General.sc.SendMessage(myDic["channel"], newDic);
         }
+        #endregion
 
+        #region define
         [Description("*define WORD \nReturns the definition of 'WORD'.")]
         public void define(Dictionary<String, dynamic> myDic)
         {
@@ -605,9 +631,9 @@ namespace SlackBot
                 Console.WriteLine(e.ToString());
             }
         }
+        #endregion
 
-#if GOOGLE || ALL
-
+        #region google
         [Description("*google WORD/S \nReturns an lmgtfy link with 'WORD/S'.")]
         public void google(Dictionary<String, dynamic> myDic)
         {
@@ -631,8 +657,9 @@ namespace SlackBot
             };
             Console.WriteLine(General.sc.caller.CallMethodPost("chat.postMessage", myDict).Result["ok"]);
         }
-#endif
+        #endregion 
 
+        #region writeTo
         [Description("*writeTo:Name/Channel:Message \nSends a 'Message' to 'Name/Channel'.")]
         public void writeTo(Dictionary<String, dynamic> myDic)
         {
@@ -666,12 +693,14 @@ namespace SlackBot
                 }
             }
         }
+        #endregion 
 
+        #region mirror
         [Description("*mirror:WORD/S \nReturns an image with 'WORD/S' mirrored in it.")]
         public void mirror(Dictionary<String, dynamic> myDic)
         {
             String[] things = ((String) myDic["text"]).Split(':');
-            if (!File.Exists(Helper.GetApplicationPath() + "/" + things[1] + ".jpg"))
+            if (!File.Exists(Helper.GetApplicationPath() + "/images/" + things[1] + ".jpg"))
             {
                 Bitmap bmp = new Bitmap(1920, 780);
                 RectangleF rectf = new RectangleF(0, 0, bmp.Width, bmp.Height);
@@ -712,15 +741,17 @@ namespace SlackBot
 
                 bmp = bmp.Clone(new Rectangle((int)(bmp.Width / 2 - size.Width), (int)(bmp.Height / 2 - size.Height), (int)size.Width * 2 + 10, (int)size.Height * 2 + 5), bmp.PixelFormat);
 
-                bmp.Save(Helper.GetApplicationPath() + "/" + things[1] + ".jpg", ImageFormat.Jpeg);
+                bmp.Save(Helper.GetApplicationPath() + "/images/" + things[1] + ".jpg", ImageFormat.Jpeg);
             }
-            String path = Helper.GetApplicationPath() + "/" + things[1] + ".jpg";
+            String path = Helper.GetApplicationPath() + "/images/" + things[1] + ".jpg";
 
             Task<String> s = General.sc.caller.SlackSendFile(path, myDic["channel"], things[1] + ".jpg");
 
             //File.Delete((Helper.GetApplicationPath() + "/" + newDic + ".bmp"));
         }
+        #endregion 
 
+        #region search
         [Description("*search:WORD/S \nReturns the first google search result.")]
         public void search(Dictionary<String, dynamic> myDic)
         {
@@ -730,9 +761,11 @@ namespace SlackBot
             Rootobject dd = (Rootobject)result.ToObject<Rootobject>();
             General.sc.SendMessage(myDic["channel"], dd.responseData.results[0].url + "\n" + dd.responseData.results[0].content);
         }
+        #endregion 
 
-        [Description("*imageSearch:WORD/S \nReturns the first google image search result.")]
-        public void imageSearch(Dictionary<String, dynamic> myDic)
+        #region iSearch
+        [Description("*iSearch:WORD/S \nReturns the first google image search result.")]
+        public void iSearch(Dictionary<String, dynamic> myDic)
         {
             String[] things = ((String)myDic["text"]).Split(':');
             String result = General.sc.caller.CallAPIString("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + things[1],
@@ -740,9 +773,11 @@ namespace SlackBot
             ImagesGoogle.Rootobject dd = (ImagesGoogle.Rootobject)result.ToObject<ImagesGoogle.Rootobject>();
             General.sc.SendMessage(myDic["channel"], dd.responseData.results[0].url);
         }
+        #endregion
 
-        [Description("*videoSearch:WORD/S \nReturns the first google video search result.")]
-        public void videoSearch(Dictionary<String, dynamic> myDic)
+        #region vsearch
+        [Description("*vSearch:WORD/S \nReturns the first google video search result.")]
+        public void vSearch(Dictionary<String, dynamic> myDic)
         {
             String[] things = ((String)myDic["text"]).Split(':');
             String result = General.sc.caller.CallAPIString("http://ajax.googleapis.com/ajax/services/search/video?v=1.0&q=" + things[1],
@@ -752,8 +787,21 @@ namespace SlackBot
         }
         #endregion
 
+        #region math
+        [Description("*math:Expression \nReturns Math.")]
+        public void math(Dictionary<String, dynamic> myDic)
+        {
+            MathEvaluator eval = new MathEvaluator();
+            double e = eval.Evaluate((((String) myDic["text"]).Replace("*math:", "")).Trim());
+            General.sc.SendMessage(myDic["channel"], e.ToString() + ", https://www.reddit.com/r/theydidthemath");
+        }
+        #endregion
+
+        #endregion
+
         #region Polls
 
+        #region addPoll
         [Description("*addPoll|MyName|MyDescription|06/07/2008 5:12:12 PM|Choice1,Choice2,Choice3 \nAdds a Poll with 'MyName' and 'MyDescription', which expires on 06.07.2008 at 5:12:12 PM and has the choices at the end.")]
         public void addPoll(Dictionary<String, dynamic> myDic)
         {
@@ -775,7 +823,9 @@ namespace SlackBot
                     General.sc.getUserNameForPost(myDic["user"]) + " poll with this name already exists!");
             }
         }
+        #endregion 
 
+        #region removePoll
         [Description("*removePoll:Name \nRemoves Poll 'Name'.")]
         public void removePoll(Dictionary<String, dynamic> myDic)
         {
@@ -793,7 +843,9 @@ namespace SlackBot
                     General.sc.getUserNameForPost(myDic["user"]) + " Insufficient Permissions!");
             }
         }
+        #endregion 
 
+        #region vote
         [Description("*vote:NameOfPoll:NameOfChoice \nAdds your vote to 'NameOfChoice' in the Poll 'NameOfPoll'.")]
         public void vote(Dictionary<String, dynamic> myDic)
         {
@@ -819,7 +871,9 @@ namespace SlackBot
                     General.sc.getUserNameForPost(myDic["user"]) + " no such poll exists!");
             }
         }
+        #endregion
 
+        #region listPolls
         [Description("*listPolls OR *listPolls:true \nList all polls and polls that have ended if 'true' is given.")]
         public void listPolls(Dictionary<String, dynamic> myDic)
         {
@@ -857,7 +911,9 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"], result);
             }
         }
+        #endregion 
 
+        #region listChoices
         [Description("*listChoices:NameOfPoll \nLists all choices in the Poll 'NameOfPoll'.")]
         public void listChoices(Dictionary<String, dynamic> myDic)
         {
@@ -865,7 +921,9 @@ namespace SlackBot
             String result = General.s.polls[things[1]].votes.Aggregate("", ((s, pair) => s + (pair.Key + "\n")));
             General.sc.SendMessage(myDic["channel"], result);
         }
+        #endregion 
 
+        #region getPollResult
         [Description("*getPollResult:NameOfPoll \nGets the result of the Poll 'NameOfPoll'.")]
         public void getPollResult(Dictionary<String, dynamic> myDic)
         {
@@ -874,7 +932,9 @@ namespace SlackBot
                 (s, pair) => s + (pair.Key + ":" + pair.Value + "\n"));
             General.sc.SendMessage(myDic["channel"], result);
         }
+        #endregion 
 
+        #region getPollDescription
         [Description("*getPollDescription:NameOfPoll \nGets the poll-description of Poll 'NameOfPoll'.")]
         public void getPollDescription(Dictionary<String, dynamic> myDic)
         {
@@ -884,7 +944,9 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"], General.s.polls[things[1]].desc);
             }
         }
+        #endregion
 
+        #region getPollEndDate
         [Description("*getPollEndDate:NameOfPoll \nGets the end-date of Poll 'NameOfPoll'.")]
         public void getPollEndDate(Dictionary<String, dynamic> myDic)
         {
@@ -894,7 +956,9 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"], General.s.polls[things[1]].dt.ToUniversalTime() + " UTC");
             }
         }
+        #endregion
 
+        #region getVoterCount
         [Description("*getVoterCount:NameOfPoll \nGets count of Users already voted in Poll 'NameOfPoll'.")]
         public void getVoterCount(Dictionary<String, dynamic> myDic)
         {
@@ -904,7 +968,9 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"], General.s.polls[things[1]].usersAlreadyVotedID.Count.ToString());
             }
         }
+        #endregion
 
+        #region getPollTime
         [Description("*getPollTime:NameOfPoll \nGets time until Poll 'NameOfPoll' ends.")]
         public void getPollTime(Dictionary<String, dynamic> myDic)
         {
@@ -917,7 +983,9 @@ namespace SlackBot
                     ts.Days + " days, " + ts.Hours + " hours, " + ts.Minutes + " minutes!");
             }
         }
+        #endregion 
 
+        #region stopPoll
         [Description("*stopPoll:NameOfPoll \nStops the Poll 'NameOfPoll'.")]
         public void stopPoll(Dictionary<String, dynamic> myDic)
         {
@@ -931,11 +999,13 @@ namespace SlackBot
                     General.sc.getUserNameForPost(myDic["user"]) + ": Poll stopped!");
             }
         }
+        #endregion 
 
         #endregion
 
         #region CHAT
 
+        #region beginChat
         [Description("*beginChat:Name \nBegins a chat with bots of these names.")]
         public void beginChat(Dictionary<String, dynamic> myDic)
         {
@@ -956,6 +1026,9 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"], "Insufficient permission!");
             }
         }
+        #endregion 
+
+        #region addBot
         [Description("*addBot:Name:Location:true(male)/false(female):birthday:friend,friend,friend:favoriteMovie:religion:favoriteFood:favoriteColor:favoriteActor:nationality:forFun:favoriteSong:favoriteBook:kindOfMusic:favoriteBand:starSign:girlfriend:boyfriend:favoriteSport:favoriteAuthor:orientation")]
         public void addBot(Dictionary<String, dynamic> myDic)
         {
@@ -1004,7 +1077,9 @@ namespace SlackBot
             fs = new FileStream(Helper.GetApplicationPath() + "/" + things[1] + "_config/Settings.xml", FileMode.Create);
             xml.Serialize(fs, r);
         }
+        #endregion 
 
+        #region terminateChat
         [Description("*terminateChat:NameOfBot\nUseful if bot broke.")]
         public void terminateChat(Dictionary<String, dynamic> myDic)
         {
@@ -1012,6 +1087,8 @@ namespace SlackBot
             General.active_users.Remove(things[1]);
             General.sc.SendMessage(myDic["channel"], "Terminated " + things[1]);
         }
+        #endregion 
+
         #endregion
 
         #region HELP
@@ -1032,5 +1109,21 @@ namespace SlackBot
             }
         }
         #endregion
+
+        #region backup
+        [Description("*noBackUp \nStops the backup process.")]
+        public void noBackUp(Dictionary<String, dynamic> myDic)
+        {
+            if (General.s.permission[myDic["user"]] >= 100)
+            {
+                Process[] ps = Process.GetProcessesByName("SlackBotBackup");
+                foreach (Process process in ps)
+                {
+                    process.Close();
+                    process.Kill();
+                }
+            }
+        }
+        #endregion 
     }
 }

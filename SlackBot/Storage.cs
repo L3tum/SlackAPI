@@ -36,7 +36,7 @@ namespace SlackBot
         [ScriptIgnore] public Dictionary<string, Dictionary<string, object>> privateChannels = new Dictionary<string, Dictionary<string, object>>();
 
         [ScriptIgnore]
-        public readonly int methodCount = 37;
+        public readonly int methodCount = 42;
 
         public delegate void delToCall(System.Collections.Generic.Dictionary<String, object> myDic);
 
