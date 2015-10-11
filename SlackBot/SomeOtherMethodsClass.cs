@@ -48,13 +48,10 @@ namespace SlackBot
             cp.ReferencedAssemblies.Add("System.Data.dll");
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = false;
-            TextWriter tw = new StreamWriter("C:/Users/Tom Niklas/Desktop/namee.txt");
             String name =
                 ((String)
                     General.sc.caller.CallAPIString("http://randomword.setgetgo.com/get.php",
                         new Dictionary<string, dynamic>()).Result).Trim();
-            tw.WriteLine(Helper.GetApplicationPath() + "/" + name + ".dll");
-            tw.Close();
             cp.OutputAssembly = Helper.GetApplicationPath() + "/" + name + ".dll";
             String finalcode =
                 "using System; \nusing SlackBot; \nusing SlackAPI; \nusing System.Data;\nnamespace MyNamespace { \npublic class MyProgram { \npublic static String MyMethod(String text){\n " +
@@ -64,12 +61,6 @@ namespace SlackBot
             if (cr.Errors.HasErrors)
             {
                 StringBuilder sb = new StringBuilder();
-
-                TextWriter sw = new StreamWriter("C:/Users/Tom Niklas/Desktop/sjdbshadbahjd.cs");
-                sw.Write(finalcode);
-                sw.WriteLine();
-                sw.WriteLine(cr.CompiledAssembly.Location + "/" + cr.CompiledAssembly.FullName);
-                sw.Close();
 
                 foreach (CompilerError error in cr.Errors)
                 {
