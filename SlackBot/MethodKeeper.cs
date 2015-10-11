@@ -792,7 +792,7 @@ namespace SlackBot
         public void math(Dictionary<String, dynamic> myDic)
         {
             MathEvaluator eval = new MathEvaluator();
-            double e = eval.Evaluate((((String) myDic["text"]).Replace("*math:", "")).Trim());
+            double e = eval.Evaluate((((String)myDic["text"]).Replace("*math:", "")).Trim());
             General.sc.SendMessage(myDic["channel"], e.ToString() + ", https://www.reddit.com/r/theydidthemath");
         }
         #endregion
@@ -1076,6 +1076,13 @@ namespace SlackBot
             r.item.First(item => item.name == "orientation").value = things[22];
             fs = new FileStream(Helper.GetApplicationPath() + "/" + things[1] + "_config/Settings.xml", FileMode.Create);
             xml.Serialize(fs, r);
+            DirectoryInfo d = new DirectoryInfo(Helper.GetApplicationPath() + "/aiml");
+            FileInfo[] ffs = d.GetFiles();
+            Directory.CreateDirectory(Helper.GetApplicationPath() + "/" + things[1] + "/aiml");
+            foreach (FileInfo fileInfo in ffs)
+            {
+                fileInfo.CopyTo(Helper.GetApplicationPath() + "/" + things[1] + "/aiml/" + fileInfo.Name);
+            }
         }
         #endregion 
 

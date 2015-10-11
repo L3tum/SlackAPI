@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.CSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using System.Runtime.CompilerServices;
+using Microsoft.Scripting.Math;
 using SlackAPI;
 
 namespace SlackBot
