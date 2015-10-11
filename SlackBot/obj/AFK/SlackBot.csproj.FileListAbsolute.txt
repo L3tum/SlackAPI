@@ -1,0 +1,1 @@
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBot\bin\AFK\SlackBot.exe.config
