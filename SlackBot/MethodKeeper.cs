@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -9,10 +8,8 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Serialization;
 using AIMLbot;
 using IronPython.Hosting;
@@ -140,6 +137,29 @@ namespace SlackBot
                     General.sc.getUserName(myDic["user"]) +
                     " is not registered for '*switchResponse'. Registering....Done");
                 General.s.permission.Add(myDic["user"], 0);
+            }
+        }
+        #endregion
+
+        #region switchListening
+        [Description("*switchListening \nSwitches if the bot should answer itself.")]
+        public void switchListening(Dictionary<String, dynamic> myDic)
+        {
+            if (General.s.permission[myDic["user"]] >= 10)
+            {
+                General.ls.w.listenToItself = !General.ls.w.listenToItself;
+                General.sc.SendMessage(myDic["channel"], "Bot listens to itself: " + General.ls.w.listenToItself);
+            }
+        }
+        #endregion
+
+        #region switchMultiple
+        [Description("*switchMultiple \nSwitches the need to enter *Name*Command.")]
+        public void switchMultiple(Dictionary<String, dynamic> myDic)
+        {
+            if (General.s.permission[myDic["user"]] >= 50)
+            {
+                General.ls.w.multiple = !General.ls.w.multiple;
             }
         }
         #endregion 
@@ -512,7 +532,6 @@ namespace SlackBot
                 if (General.s.permission[myDic["user"]] >= 10)
                 {
                     Console.WriteLine(General.sc.getUserName(myDic["user"]) + " wants to restart!");
-                    Console.ReadLine();
                     Process p = Process.GetCurrentProcess();
                     foreach (Thread thread1 in p.Threads.OfType<Thread>())
                     {
@@ -548,7 +567,6 @@ namespace SlackBot
             {
                 Console.WriteLine("User: " + General.sc.getUserName(myDic["user"]) +
                                   " wants to stop the process!");
-                Console.ReadLine();
                 Program.OnProcessExit(General.sc, EventArgs.Empty);
                 Environment.Exit(-1);
             }
@@ -797,6 +815,35 @@ namespace SlackBot
         }
         #endregion
 
+        #region setBday
+        [Description("*setBday:username:Birthday:Age")]
+        public void setBday(Dictionary<String, dynamic> myDic)
+        {
+            String[] things = ((String) myDic["text"]).Split(':');
+            if (!things[1].Equals(General.sc.getUserName(myDic["user"])) && General.s.permission[myDic["user"]] >= 100)
+            {
+                DateTime tmp = DateTime.Parse(things[2]);
+                tmp = tmp.AddYears(Int32.Parse(things[3]) + 1);
+                General.s.bdays.Add(things[1], tmp);
+                SomeOtherMethodsClass.setNextBday();
+                General.sc.SendMessage(myDic["channel"], "Birthday set!");
+            }
+            else if (things[1].Equals(General.sc.getUserName(myDic["user"])))
+            {
+                DateTime tmp = DateTime.Parse(things[2]);
+                tmp = tmp.AddYears(Int32.Parse(things[3]) + 1);
+                General.s.bdays.Add(things[1], tmp);
+                SomeOtherMethodsClass.setNextBday();
+                General.sc.SendMessage(myDic["channel"], "Birthday set!");
+            }
+            else
+            {
+                General.sc.SendMessage(myDic["channel"],
+                    "You don't have enough permission to set the birthday of another person!");
+            }
+        }
+        #endregion 
+
         #endregion
 
         #region Polls
@@ -815,7 +862,7 @@ namespace SlackBot
                 General.sc.SendMessage(myDic["channel"],
                     General.sc.getUserNameForPost(myDic["user"]) + " poll started! Expire date: " +
                     General.s.polls[things[1]].dt);
-                General.s.setNextPoll();
+                SomeOtherMethodsClass.setNextPoll();
             }
             else
             {
@@ -835,7 +882,7 @@ namespace SlackBot
                 General.s.polls.Remove(things[1]);
                 General.sc.SendMessage(myDic["channel"],
                     General.sc.getUserNameForPost(myDic["user"]) + " poll removed!");
-                General.s.setNextPoll();
+                SomeOtherMethodsClass.setNextPoll();
             }
             else
             {
@@ -994,7 +1041,7 @@ namespace SlackBot
             {
                 General.s.polls[things[1]].isRunning = false;
                 General.s.polls[things[1]].dt = DateTime.Now;
-                General.s.setNextPoll();
+                SomeOtherMethodsClass.setNextPoll();
                 General.sc.SendMessage(myDic["channel"],
                     General.sc.getUserNameForPost(myDic["user"]) + ": Poll stopped!");
             }
@@ -1074,15 +1121,17 @@ namespace SlackBot
             r.item.First(item => item.name == "favoritesport").value = things[20];
             r.item.First(item => item.name == "favoriteauthor").value = things[21];
             r.item.First(item => item.name == "orientation").value = things[22];
+            r.item.First(item => item.name == "configdirectory").value = things[1] + "_config";
             fs = new FileStream(Helper.GetApplicationPath() + "/" + things[1] + "_config/Settings.xml", FileMode.Create);
             xml.Serialize(fs, r);
             DirectoryInfo d = new DirectoryInfo(Helper.GetApplicationPath() + "/aiml");
             FileInfo[] ffs = d.GetFiles();
-            Directory.CreateDirectory(Helper.GetApplicationPath() + "/" + things[1] + "/aiml");
+            Directory.CreateDirectory(Helper.GetApplicationPath() + "/" + things[1] + "_config/aiml");
             foreach (FileInfo fileInfo in ffs)
             {
-                fileInfo.CopyTo(Helper.GetApplicationPath() + "/" + things[1] + "/aiml/" + fileInfo.Name);
+                fileInfo.CopyTo(Helper.GetApplicationPath() + "/" + things[1] + "_config/aiml/" + fileInfo.Name);
             }
+            General.sc.SendMessage(myDic["channel"], "Bot added!");
         }
         #endregion 
 
@@ -1093,6 +1142,16 @@ namespace SlackBot
             String[] things = ((String) myDic["text"]).Split(':');
             General.active_users.Remove(things[1]);
             General.sc.SendMessage(myDic["channel"], "Terminated " + things[1]);
+        }
+        #endregion
+
+        #region listBots
+        [Description("*listBots \nList all available bots.")]
+        public void listBots(Dictionary<String, dynamic> myDic)
+        {
+            String result = Directory.GetDirectories(Helper.GetApplicationPath()).Where(directory => directory.Contains("_config")).Aggregate("", (current, directory) => current + ((((directory.Replace(Helper.GetApplicationPath(), "")).Replace("_config", "")).Replace("\\", "")).Trim() + ", "));
+            result = result.Remove(result.Length - 2, 2);
+            General.sc.SendMessage(myDic["channel"], result);
         }
         #endregion 
 
@@ -1126,8 +1185,15 @@ namespace SlackBot
                 Process[] ps = Process.GetProcessesByName("SlackBotBackup");
                 foreach (Process process in ps)
                 {
-                    process.Close();
-                    process.Kill();
+                    try
+                    {
+                        process.Close();
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        
+                    }
                 }
             }
         }

@@ -26,7 +26,8 @@ namespace SlackBot
         public Dictionary<string, List<Eval>> evals = new Dictionary<string, List<Eval>>();
         public Dictionary<string, dynamic> myDic = new Dictionary<string, dynamic>();
         public Dictionary<string, Poll> polls = new Dictionary<string, Poll>();
-
+        public Dictionary<String, DateTime> bdays = new Dictionary<string, DateTime>();
+            
         [ScriptIgnore] public bool another = false;
 
         [ScriptIgnore] public String name;
@@ -36,7 +37,7 @@ namespace SlackBot
         [ScriptIgnore] public Dictionary<string, Dictionary<string, object>> privateChannels = new Dictionary<string, Dictionary<string, object>>();
 
         [ScriptIgnore]
-        public readonly int methodCount = 42;
+        public readonly int methodCount = 46;
 
         public delegate void delToCall(System.Collections.Generic.Dictionary<String, object> myDic);
 
@@ -104,34 +105,15 @@ namespace SlackBot
 
             if (General.s.polls.Count > 0)
             {
-                setNextPoll();
+                SomeOtherMethodsClass.setNextPoll();
+            }
+            if (General.s.bdays.Count > 0)
+            {
+                SomeOtherMethodsClass.setNextBday();
             }
         }
 
         #endregion
-
-        public void setNextPoll()
-        {
-            try
-            {
-                KeyValuePair<string, Poll> earliest = General.s.polls.First(pair => pair.Value.isRunning == true);
-                foreach (KeyValuePair<string, Poll> keyValuePair in General.s.polls)
-                {
-                    if (keyValuePair.Value.dt < earliest.Value.dt)
-                    {
-                        earliest = keyValuePair;
-                        SomeOtherMethodsClass.endTime = earliest.Value.dt;
-                        SomeOtherMethodsClass.PollName = earliest.Key;
-                        General.s.PollEndThread = new Thread(SomeOtherMethodsClass.PollEndDeterminer);
-                        General.s.PollEndThread.Start();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
 
         #region Serialize
 

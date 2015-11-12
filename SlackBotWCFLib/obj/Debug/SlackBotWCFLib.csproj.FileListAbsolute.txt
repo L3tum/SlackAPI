@@ -1,0 +1,6 @@
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBotWCFLib\bin\Debug\SlackBotWCFLib.dll.config
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBotWCFLib\bin\Debug\SlackBotWCFLib.dll
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBotWCFLib\bin\Debug\SlackBotWCFLib.pdb
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBotWCFLib\obj\Debug\SlackBotWCFLib.csprojResolveAssemblyReference.cache
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBotWCFLib\obj\Debug\SlackBotWCFLib.dll
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBotWCFLib\obj\Debug\SlackBotWCFLib.pdb

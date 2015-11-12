@@ -20,6 +20,7 @@ namespace SlackAPI
             this.Token = Token;
         }
 
+        #region CallMethod
         /// <summary>
         ///     Calls Method of API and returns response as Dictionary
         /// </summary>
@@ -46,7 +47,32 @@ namespace SlackAPI
                 return response.EnsureSuccessStatusCode().ToString().ToDictionary();
             }
         }
+        #endregion 
 
+        #region CallMethodCustomToken
+        public async Task<Dictionary<string, dynamic>> CallMethodCustomToken(string Method, Dictionary<string, dynamic> Parameters)
+        {
+            using (var client = new HttpClient())
+            {
+                var question = "?token=" + Parameters["token"];
+                foreach (var VARIABLE in Parameters)
+                {
+                    question += "&" + VARIABLE.Key + "=" + VARIABLE.Value;
+                }
+                var requestUri = new Uri("https://slack.com/api/" + Method + question + "&pretty=1");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await client.GetAsync(requestUri);
+                if (response.IsSuccessStatusCode)
+                {
+                    var Response = await response.Content.ReadAsStringAsync();
+                    return Response.ToDictionary();
+                }
+                return response.EnsureSuccessStatusCode().ToString().ToDictionary();
+            }
+        }
+        #endregion 
+
+        #region CallMethodPost
         /// <summary>
         ///     Calls Method of API with POST and returns response as Dictionary
         /// </summary>
@@ -74,7 +100,9 @@ namespace SlackAPI
                 return response.EnsureSuccessStatusCode().ToString().ToDictionary();
             }
         }
+        #endregion 
 
+        #region CallAPI
         public async Task<Dictionary<String, dynamic>> CallAPI(String uri, Dictionary<String, dynamic> Parameters)
         {
             using (var client = new HttpClient())
@@ -91,7 +119,9 @@ namespace SlackAPI
                 return response.EnsureSuccessStatusCode().ToString().ToDictionary();
             }
         }
+        #endregion 
 
+        #region CallAPIString
         public async Task<String> CallAPIString(String uri, Dictionary<String, dynamic> Parameters)
         {
             using (var client = new HttpClient())
@@ -108,6 +138,9 @@ namespace SlackAPI
                 return response.EnsureSuccessStatusCode().ToString();
             }
         }
+        #endregion 
+
+        #region SendFile
         public async Task<String> SlackSendFile(String path, String channel, String filename)
         {
             FileStream str = File.OpenRead(@path);
@@ -130,5 +163,6 @@ namespace SlackAPI
             await CallAPIString("http://randomword.setgetgo.com/get.php", new Dictionary<string, dynamic>());
             return k;
         }
+        #endregion
     }
 }

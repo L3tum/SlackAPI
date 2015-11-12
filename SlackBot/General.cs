@@ -14,5 +14,6 @@ namespace SlackBot
         public static Storage s;
         public static Thread question;
         public static Dictionary<String,AIMLbot.User> active_users = new Dictionary<string, User>();
+        public static SlackBotRunner sbr;
     }
 }

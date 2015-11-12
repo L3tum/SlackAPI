@@ -28,3 +28,4 @@ C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBot\bin\
 C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBot\bin\ALL\Microsoft.Scripting.xml
 C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBot\bin\ALL\Microsoft.Scripting.AspNet.xml
 C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBot\bin\ALL\Microsoft.Scripting.Metadata.xml
+C:\Users\Tom Niklas\Documents\Visual Studio 2013\Projects\SlackAPI\SlackBot\obj\ALL\SlackBot.g.resources

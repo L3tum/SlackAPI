@@ -17,72 +17,29 @@ namespace SlackBot
         public WebSlack ws;
         public Dictionary<String, dynamic> myDic = new Dictionary<string, dynamic>();
         public bool finished;
+        public bool activated = true;
+        public Worker w;
+        private readonly ParameterizedThreadStart pst;
 
         public Listener(WebSlack ws)
         {
             this.ws = ws;
+            w = new Worker();
+            pst = w.MessageWorker;
         }
 
         public void Listen()
         {
-            try
+            while (should_listen)
             {
-                while (should_listen)
+                finished = false;
+                if (ws.changed)
                 {
-                    finished = false;
-                    if (ws.changed)
+                    myDic = ws.Response.ToDictionary();
+                    if (myDic != null)
                     {
-                        myDic = ws.Response.ToDictionary();
-                        if (myDic != null)
+                        if (activated)
                         {
-                            #region Test
-
-                            /*
-                        if (myDic.ContainsKey("text") && myDic.ContainsKey("user") && (General.sc.getUserName(myDic["user"]) != "someone"))
-                        {
-                            String text = myDic["text"];
-                            String user = "Name: " + General.sc.getUserName(myDic["user"]) + ", ID: " + myDic["user"];
-                            String channel = "Name: " + General.sc.getChannelName(myDic["channel"]) + ", ID: " +
-                                             myDic["channel"];
-                            Console.WriteLine("Text: " + text);
-                            Console.WriteLine("User: " + user);
-                            Console.WriteLine("Channel: " + channel);
-                        }
-                         * */
-
-
-                            /*
-                            String text = "";
-                            foreach (KeyValuePair<string, dynamic> keyValuePair in myDic)
-                            {
-                                text += keyValuePair.Key + ":";
-                                if (keyValuePair.Value is Dictionary<String, object>)
-                                {
-                                    foreach (KeyValuePair<String, object> o in keyValuePair.Value)
-                                    {
-                                        text += o.Key + ":" + o.Value + "\n";
-                                    }
-                                }
-                                else
-                                {
-                                    text += keyValuePair.Value + "\n";
-                                }
-                             * */
-                            //}
-                            /*
-                                if (myDic.ContainsKey("file"))
-                                {
-                                    TextWriter tw = new StreamWriter("C:/Users/Tom Niklas/Desktop/jadasjdbajh.txt");
-                                    tw.Write(text);
-                                    tw.Close();
-                                }
-                               Console.WriteLine(text);
-                             * */
-
-                            #endregion
-
-                            Worker w = new Worker();
-                            ParameterizedThreadStart pst = w.MessageWorker;
                             Thread myThread = new Thread(pst);
                             myThread.Start(myDic);
                             ws.changed = false;
@@ -98,17 +55,23 @@ namespace SlackBot
                                                 keyValuePair.Value.UserID).Output);
                                     }
                                 }
+                                if (((String) myDic["text"]).Equals(("*deactivate:" + General.sc.myself["name"])))
+                                {
+                                    activated = false;
+                                    General.sc.SendMessage(myDic["channel"], "Listening deactivated!");
+                                }
                             }
                         }
-                        ws.changed = false;
+                        else if (myDic.ContainsKey("text") &&
+                                 ((String) myDic["text"]).Equals(("*activate:" + General.sc.myself["name"])))
+                        {
+                            activated = true;
+                            General.sc.SendMessage(myDic["channel"], "Listening activated!");
+                        }
                     }
-                    finished = true;
+                    ws.changed = false;
                 }
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                Console.ReadLine();
+                finished = true;
             }
         }
     }

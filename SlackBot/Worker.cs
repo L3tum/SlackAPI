@@ -4,8 +4,11 @@ using System.Reflection;
 
 namespace SlackBot
 {
-    internal class Worker
+    public class Worker
     {
+        public bool listenToItself;
+        public bool multiple;
+
         public void MessageWorker(object Message)
         {
             Dictionary<String, dynamic> myDic = (Dictionary<String, dynamic>)Message;
@@ -16,24 +19,72 @@ namespace SlackBot
 
                 #region commands
 
-                if (ttxt.StartsWith("*") && !(General.sc.getUserName(myDic["user"]).Equals("someone")) &&
-                    !(General.sc.getUserName(myDic["user"]).Equals("timo")))
+                if (!listenToItself)
                 {
-                    foreach (KeyValuePair<string, Storage.delToCall> command in General.s.commands)
+                    if (ttxt.StartsWith("*") && !((String)myDic["user"]).Equals(General.sc.myself["id"]))
                     {
-                        if (ttxt.Contains(("*" + command.Key)))
+                        foreach (KeyValuePair<string, Storage.delToCall> command in General.s.commands)
                         {
-                            try
+                            if (!multiple)
                             {
-                                ((Storage.delToCall) command.Value).Invoke(myDic);
-                                answered = true;
-                                //Console.WriteLine("Called!");
+                                if (ttxt.Contains(("*" + command.Key)))
+                                {
+                                    try
+                                    {
+                                        ((Storage.delToCall) command.Value).Invoke(myDic);
+                                        answered = true;
+                                        //Console.WriteLine("Called!");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e.ToString());
+                                        General.sc.SendMessage(myDic["channel"],
+                                            "Oops, something went wrong! Check if you entered the command correctly with '*help:command'.\nIf you've entered '*mirror' your word could have been too long.");
+                                    }
+                                }
                             }
-                            catch (Exception e)
+                            else
                             {
-                                Console.WriteLine(e.ToString());
-                                General.sc.SendMessage(myDic["channel"],
-                                    "Oops, something went wrong! Check if you entered the command correctly with '*help:command'.\nIf you've entered '*mirror' your word could have been too long.");
+                                if (ttxt.Contains((General.sc.myself["name"] + "*" + command.Key)))
+                                {
+                                    try
+                                    {
+                                        myDic["text"] =((String) ((String) myDic["text"]).Replace(General.sc.myself["name"], "")).Trim();
+                                        ((Storage.delToCall)command.Value).Invoke(myDic);
+                                        answered = true;
+                                        //Console.WriteLine("Called!");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e.ToString());
+                                        General.sc.SendMessage(myDic["channel"],
+                                            "Oops, something went wrong! Check if you entered the command correctly with '*help:command'.\nIf you've entered '*mirror' your word could have been too long.");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (ttxt.StartsWith("*"))
+                    {
+                        foreach (KeyValuePair<string, Storage.delToCall> command in General.s.commands)
+                        {
+                            if (ttxt.Contains(("*" + command.Key)))
+                            {
+                                try
+                                {
+                                    ((Storage.delToCall)command.Value).Invoke(myDic);
+                                    answered = true;
+                                    //Console.WriteLine("Called!");
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.ToString());
+                                    General.sc.SendMessage(myDic["channel"],
+                                        "Oops, something went wrong! Check if you entered the command correctly with '*help:command'.\nIf you've entered '*mirror' your word could have been too long.");
+                                }
                             }
                         }
                     }
@@ -48,7 +99,7 @@ namespace SlackBot
                 {
                     foreach (var afkUser in General.s.afkUsers)
                     {
-                        if (ttxt.Contains(afkUser) && (General.sc.getUserName(myDic["user"]) != "someone"))
+                        if (ttxt.Contains(afkUser) && (((String)General.sc.getUserName(myDic["user"])).Equals(General.sc.myself["name"])))
                         {
                             if (General.sc.getChannelName(myDic["channel"]) != "general")
                             {
@@ -151,31 +202,75 @@ namespace SlackBot
 
                 try
                 {
-                    if (!(General.sc.getUserName(myDic["user"]).Equals("someone")) &&
-                        !(General.sc.getUserName(myDic["user"]).Equals("timo")) && !answered)
+                    if (!listenToItself)
                     {
-                        if (((String) myDic["channel"]).StartsWith("D"))
+                        if (((String)myDic["user"]).Equals(General.sc.myself["id"]) && !answered)
                         {
-                            if (!General.s.privateChannels.ContainsKey(General.sc.Users["letum"]["id"]))
+                            if (((String) myDic["channel"]).StartsWith("D"))
                             {
-                                Dictionary<String, dynamic> paramse = new Dictionary<string, dynamic>();
-                                paramse.Add("user", General.sc.Users["letum"]["id"]);
-                                Dictionary<String, dynamic> something =
-                                    General.sc.caller.CallMethodPost("im.open", paramse).Result;
-                                General.s.privateChannels.Add(General.sc.Users["letum"]["id"], something["channel"]);
+                                if (!General.s.privateChannels.ContainsKey(General.sc.Users["letum"]["id"]))
+                                {
+                                    Dictionary<String, dynamic> paramse = new Dictionary<string, dynamic>();
+                                    paramse.Add("user", General.sc.Users["letum"]["id"]);
+                                    Dictionary<String, dynamic> something =
+                                        General.sc.caller.CallMethodPost("im.open", paramse).Result;
+                                    General.s.privateChannels.Add(General.sc.Users["letum"]["id"], something["channel"]);
+                                }
+                                General.sc.SendMessage(
+                                    ((String) General.s.privateChannels[General.sc.Users["letum"]["id"]]["id"]),
+                                    myDic["text"] + " by " + General.sc.getUserName(myDic["user"]));
                             }
-                            General.sc.SendMessage(
-                                ((String) General.s.privateChannels[General.sc.Users["letum"]["id"]]["id"]),
-                                myDic["text"] + " by " + General.sc.getUserName(myDic["user"]));
-                        }
-                        if (General.s.sternchenResponse)
-                        {
-                            if (ttxt.StartsWith("*"))
+                            if (General.s.sternchenResponse)
+                            {
+                                if (ttxt.StartsWith("*"))
+                                {
+                                    bool found = false;
+                                    foreach (KeyValuePair<string, List<string>> keyValuePair in General.s.responses)
+                                    {
+                                        if ((ttxt.ToLower()).StartsWith(("*" + keyValuePair.Key.ToLower())))
+                                        {
+                                            Random rand = new Random();
+                                            int dis = rand.Next(0, keyValuePair.Value.Count);
+                                            General.sc.SendMessage(myDic["channel"], keyValuePair.Value[dis]);
+                                            Console.WriteLine("Message: " + keyValuePair.Value[dis] +
+                                                              " sent, because User: " +
+                                                              General.sc.getUserName(myDic["user"]) + " entered: " +
+                                                              keyValuePair.Key + " with random value: " + dis);
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!found)
+                                    {
+                                        foreach (KeyValuePair<string, List<Eval>> keyValuePair in General.s.evals)
+                                        {
+                                            if ((ttxt.ToLower()).StartsWith(("*" + keyValuePair.Key.ToLower())))
+                                            {
+                                                String[] tmp = ttxt.Split(':');
+                                                Random rand = new Random();
+                                                int dis = rand.Next(0, keyValuePair.Value.Count);
+                                                MethodInfo mi =
+                                                    Assembly.LoadFrom(keyValuePair.Value[dis].path)
+                                                        .GetType("MyNamespace.MyProgram")
+                                                        .GetMethod("MyMethod");
+                                                String result =
+                                                    (String) mi.Invoke(null, new object[] {((String) myDic["text"])});
+                                                if (keyValuePair.Value[dis].printToChannel)
+                                                {
+                                                    General.sc.SendMessage(myDic["channel"], result);
+                                                }
+                                                found = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
                             {
                                 bool found = false;
                                 foreach (KeyValuePair<string, List<string>> keyValuePair in General.s.responses)
                                 {
-                                    if ((ttxt.ToLower()).StartsWith(("*" + keyValuePair.Key.ToLower())))
+                                    if ((ttxt.ToLower()).StartsWith((keyValuePair.Key.ToLower())))
                                     {
                                         Random rand = new Random();
                                         int dis = rand.Next(0, keyValuePair.Value.Count);
@@ -188,55 +283,89 @@ namespace SlackBot
                                         break;
                                     }
                                 }
-                                if (!found)
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (!answered)
+                        {
+                            if (((String)myDic["channel"]).StartsWith("D"))
+                            {
+                                if (!General.s.privateChannels.ContainsKey(General.sc.Users["letum"]["id"]))
                                 {
-                                    foreach (KeyValuePair<string, List<Eval>> keyValuePair in General.s.evals)
+                                    Dictionary<String, dynamic> paramse = new Dictionary<string, dynamic>();
+                                    paramse.Add("user", General.sc.Users["letum"]["id"]);
+                                    Dictionary<String, dynamic> something =
+                                        General.sc.caller.CallMethodPost("im.open", paramse).Result;
+                                    General.s.privateChannels.Add(General.sc.Users["letum"]["id"], something["channel"]);
+                                }
+                                General.sc.SendMessage(
+                                    ((String)General.s.privateChannels[General.sc.Users["letum"]["id"]]["id"]),
+                                    myDic["text"] + " by " + General.sc.getUserName(myDic["user"]));
+                            }
+                            if (General.s.sternchenResponse)
+                            {
+                                if (ttxt.StartsWith("*"))
+                                {
+                                    bool found = false;
+                                    foreach (KeyValuePair<string, List<string>> keyValuePair in General.s.responses)
                                     {
                                         if ((ttxt.ToLower()).StartsWith(("*" + keyValuePair.Key.ToLower())))
                                         {
-                                            String[] tmp = ttxt.Split(':');
                                             Random rand = new Random();
                                             int dis = rand.Next(0, keyValuePair.Value.Count);
-                                            MethodInfo mi =
-                                                Assembly.LoadFrom(keyValuePair.Value[dis].path)
-                                                    .GetType("MyNamespace.MyProgram")
-                                                    .GetMethod("MyMethod");
-                                            String result =
-                                                (String) mi.Invoke(null, new object[] {((String) myDic["text"])});
-                                            if (keyValuePair.Value[dis].printToChannel)
-                                            {
-                                                General.sc.SendMessage(myDic["channel"], result);
-                                            }
+                                            General.sc.SendMessage(myDic["channel"], keyValuePair.Value[dis]);
+                                            Console.WriteLine("Message: " + keyValuePair.Value[dis] +
+                                                              " sent, because User: " +
+                                                              General.sc.getUserName(myDic["user"]) + " entered: " +
+                                                              keyValuePair.Key + " with random value: " + dis);
                                             found = true;
+                                            break;
                                         }
-                                        if (!found)
+                                    }
+                                    if (!found)
+                                    {
+                                        foreach (KeyValuePair<string, List<Eval>> keyValuePair in General.s.evals)
                                         {
-                                            Console.WriteLine("No valid response to: " + ttxt);
+                                            if ((ttxt.ToLower()).StartsWith(("*" + keyValuePair.Key.ToLower())))
+                                            {
+                                                String[] tmp = ttxt.Split(':');
+                                                Random rand = new Random();
+                                                int dis = rand.Next(0, keyValuePair.Value.Count);
+                                                MethodInfo mi =
+                                                    Assembly.LoadFrom(keyValuePair.Value[dis].path)
+                                                        .GetType("MyNamespace.MyProgram")
+                                                        .GetMethod("MyMethod");
+                                                String result =
+                                                    (String)mi.Invoke(null, new object[] { ((String)myDic["text"]) });
+                                                if (keyValuePair.Value[dis].printToChannel)
+                                                {
+                                                    General.sc.SendMessage(myDic["channel"], result);
+                                                }
+                                                found = true;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        else
-                        {
-                            bool found = false;
-                            foreach (KeyValuePair<string, List<string>> keyValuePair in General.s.responses)
+                            else
                             {
-                                if ((ttxt.ToLower()).StartsWith((keyValuePair.Key.ToLower())))
+                                bool found = false;
+                                foreach (KeyValuePair<string, List<string>> keyValuePair in General.s.responses)
                                 {
-                                    Random rand = new Random();
-                                    int dis = rand.Next(0, keyValuePair.Value.Count);
-                                    General.sc.SendMessage(myDic["channel"], keyValuePair.Value[dis]);
-                                    Console.WriteLine("Message: " + keyValuePair.Value[dis] + " sent, because User: " +
-                                                      General.sc.getUserName(myDic["user"]) + " entered: " +
-                                                      keyValuePair.Key + " with random value: " + dis);
-                                    found = true;
-                                    break;
+                                    if ((ttxt.ToLower()).StartsWith((keyValuePair.Key.ToLower())))
+                                    {
+                                        Random rand = new Random();
+                                        int dis = rand.Next(0, keyValuePair.Value.Count);
+                                        General.sc.SendMessage(myDic["channel"], keyValuePair.Value[dis]);
+                                        Console.WriteLine("Message: " + keyValuePair.Value[dis] + " sent, because User: " +
+                                                          General.sc.getUserName(myDic["user"]) + " entered: " +
+                                                          keyValuePair.Key + " with random value: " + dis);
+                                        found = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (!found)
-                            {
-                                Console.WriteLine("No valid response to: " + ttxt);
                             }
                         }
                     }

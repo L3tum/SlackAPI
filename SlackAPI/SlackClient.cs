@@ -16,6 +16,7 @@ namespace SlackAPI
         public APICaller caller;
         public String URL;
 
+        #region Constructor
         public SlackClient(String Token)
         {
             caller = new APICaller(Token);
@@ -44,7 +45,9 @@ namespace SlackAPI
                 Console.ReadLine();
             }
         }
+        #endregion 
 
+        #region SendMessage
         /// <summary>
         /// "Shortcut" for sending a message.
         /// You can either type in the id or the name of the channel.
@@ -76,9 +79,43 @@ namespace SlackAPI
             }
             Console.WriteLine("Posted message: " + Message + " to Channel: " + Channel + " with return code: " + returned);
             return returned;
-            return false;
         }
+        #endregion
 
+        #region SendMessageCustomToken
+        public static bool SendMessageCustomToken(String Channel, String Message, String Token)
+        {
+            APICaller apic = new APICaller(Token);
+            bool returned = false;
+            Dictionary<String, dynamic> Params = new Dictionary<string, dynamic>();
+
+            if (Token.Equals("someone"))
+            {
+                Token = "xoxp-5007212458-11027941589-11025314452-ac4fcf3c3b";
+            }
+            else if (Token.Equals("timo"))
+            {
+                Token = "xoxb-5134150563-iZKW7CIodzRbffqVmFmz6m2S";
+            }
+            else if (Token.Equals("lily"))
+            {
+                Token = "xoxb-7444634401-UTU2IHZE2kULUWu70hgKV0FA";
+            }
+
+            if (Channel.StartsWith("C") || Channel.StartsWith("D"))
+            {
+                Params.Add("channel", Channel);
+                Params.Add("text", Message);
+                Params.Add("as_user", "true");
+                Params.Add("token", Token);
+                returned = apic.CallMethodCustomToken("chat.postMessage", Params).Result["ok"];
+            }
+            Console.WriteLine("Posted message: " + Message + " to Channel: " + Channel + " with return code: " + returned);
+            return returned;
+        }
+        #endregion 
+
+        #region gets
         public String getUserName(String id)
         {
             foreach (KeyValuePair<string, dynamic> VARIABLE in Users)
@@ -107,5 +144,6 @@ namespace SlackAPI
         {
             return ("<@" + id + "|" + getUserName(id) + ">");
         }
+        #endregion 
     }
 }

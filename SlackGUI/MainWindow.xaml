@@ -1,0 +1,26 @@
+﻿<Window x:Name="Window" x:Class="SlackGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="720" Width="1080">
+    <Grid>
+        <TabControl x:Name="TabControl" HorizontalAlignment="Left" Height="690" VerticalAlignment="Top" Width="1072">
+            <TabItem x:Name="AvailableBotsTab" Header="Available Bots">
+                <Grid Background="#FFE5E5E5">
+                    <ListBox HorizontalAlignment="Left" Height="638" Margin="10,10,0,0" VerticalAlignment="Top" Width="165"/>
+                    <Button Content="Button" HorizontalAlignment="Left" Margin="180,10,0,0" VerticalAlignment="Top" Width="135" Height="638"/>
+                    <TextBox HorizontalAlignment="Left" Height="40" Margin="395,133,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="320"/>
+                    <Button Content="Button" HorizontalAlignment="Left" Height="40" Margin="720,133,0,0" VerticalAlignment="Top" Width="95"/>
+                    <TextBox HorizontalAlignment="Left" Height="23" Margin="395,103,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="ChatTab" Header="Chat">
+                <Grid Background="#FFE5E5E5">
+                    <ListBox HorizontalAlignment="Left" Height="638" Margin="10,10,0,0" VerticalAlignment="Top" Width="100"/>
+                    <ListBox HorizontalAlignment="Left" Height="523" Margin="115,10,0,0" VerticalAlignment="Top" Width="937"/>
+                    <TextBox HorizontalAlignment="Left" Height="110" Margin="115,538,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="937"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>

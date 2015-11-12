@@ -23,7 +23,10 @@ namespace SlackBot
     {
         public static DateTime endTime;
         public static String PollName;
+        public static String username;
+        public static DateTime bday;
 
+        #region PollEndDeterminer
         public static void PollEndDeterminer()
         {
             while (((endTime - DateTime.Now) > TimeSpan.Zero))
@@ -33,10 +36,83 @@ namespace SlackBot
             if (PollName != "null")
             {
                 General.s.polls[PollName].isRunning = false;
-                General.s.setNextPoll();
+                General.sc.SendMessage("bot", PollName + " has expired!");
+                setNextPoll();
             }
         }
+        #endregion 
 
+        #region bdayDeterminer
+        public static void BdayDeterminer()
+        {
+            while (((endTime - DateTime.Now) > TimeSpan.Zero))
+            {
+                Thread.Sleep(TimeSpan.FromHours(1));
+            }
+            if (username != null)
+            {
+                General.sc.SendMessage("general", "HAPPY BIRTHDAY <@" + username + ">");
+            }
+            General.s.bdays[username].AddYears(1);
+            setNextBday();
+        }
+        #endregion 
+
+        #region setNextPoll
+        public static void setNextPoll()
+        {
+            try
+            {
+                KeyValuePair<string, Poll> earliest = General.s.polls.First(pair => pair.Value.isRunning == true);
+                foreach (KeyValuePair<string, Poll> keyValuePair in General.s.polls)
+                {
+                    if (keyValuePair.Value.dt < earliest.Value.dt)
+                    {
+                        earliest = keyValuePair;
+                        SomeOtherMethodsClass.endTime = earliest.Value.dt;
+                        SomeOtherMethodsClass.PollName = earliest.Key;
+                        if (General.s.PollEndThread != null)
+                        {
+                            General.s.PollEndThread.Abort();
+                        }
+                        General.s.PollEndThread = new Thread(SomeOtherMethodsClass.PollEndDeterminer);
+                        General.s.PollEndThread.Start();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+        #endregion 
+
+        #region setNextBDay
+        public static void setNextBday()
+        {
+            try
+            {
+                KeyValuePair<string, DateTime> earliest = General.s.bdays.ElementAt(0);
+                foreach (KeyValuePair<string, DateTime> keyValuePair in General.s.bdays)
+                {
+                    if (keyValuePair.Value < earliest.Value)
+                    {
+                        earliest = keyValuePair;
+                        SomeOtherMethodsClass.bday = earliest.Value;
+                        SomeOtherMethodsClass.username = earliest.Key;
+                        General.s.PollEndThread = new Thread(SomeOtherMethodsClass.BdayDeterminer);
+                        General.s.PollEndThread.Start();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+        #endregion 
+
+        #region createEval
         //Method has to be static
         //Method name has to be "MyMethod" and Type name has to be "MyProgram" and Namespace name has to be "MyNamespace"
         public static Eval CreateEval(string sCSCode, bool print, string desc)
@@ -74,6 +150,9 @@ namespace SlackBot
             String path = (((cr.CompiledAssembly.Location.Replace("file:///", "")).Replace("\\", "/")).Trim());
             return new Eval(print, path, desc);
         }
+        #endregion 
+
+        #region ResizeImage
         /// <summary>
         /// Resize the image to the specified width and height.
         /// </summary>
@@ -104,5 +183,6 @@ namespace SlackBot
             }
             return destImage;
         }
+        #endregion 
     }
 }

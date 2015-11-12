@@ -1,0 +1,29 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" x:Name="BotGUI" mc:Ignorable="d" x:Class="BotGUI.MainWindow"
+        Title="MainWindow" Height="720" Width="1080">
+    <Grid>
+        <TabControl x:Name="TabControls" HorizontalAlignment="Left" Height="690" VerticalAlignment="Top" Width="1072">
+            <TabItem x:Name="ConnectTab" Header="Connect">
+                <Grid Background="#FFE5E5E5">
+                    <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="155" Margin="320,133,0,0" d:LayoutOverrides="HorizontalAlignment" Height="50"/>
+                    <Label x:Name="justALabel1" Content="Available Bots" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,32,0,0" Width="305" FontFamily="Tahoma" FontSize="20" HorizontalContentAlignment="Center" Background="White" Height="39" BorderBrush="Black"/>
+                    <Label x:Name="justALabel" Content="IsConnected:" HorizontalAlignment="Left" Margin="320,213,0,0" VerticalAlignment="Top" Width="85" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment" Background="White"/>
+                    <Label x:Name="IsConnected" Content="false&#xD;&#xA;&#xD;&#xA;" HorizontalAlignment="Left" Margin="405,213,0,0" VerticalAlignment="Top" Height="26" Width="40" d:LayoutOverrides="HorizontalAlignment" Background="White"/>
+                    <Image Margin="0,133,107,193" Source="beautiful_mess_logo.jpg" Stretch="Fill" HorizontalAlignment="Right" Width="370"/>
+                    <ListBox x:Name="BotList" HorizontalAlignment="Left" Margin="10,71,0,193" Width="305" BorderBrush="Black"></ListBox>
+                    <TextBox x:Name="TokenText" Height="25" TextWrapping="Wrap" Text="Token" VerticalAlignment="Top" Margin="325,293,482,0"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="ActiveBotTab" Header="Active Bot">
+                <Grid Background="#FFE5E5E5">
+                    <Label x:Name="BotName" Content="Name:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="145"/>
+                    <Label x:Name="BotID" Content="ID:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="145"/>
+                    <Label x:Name="BotToken" Content="Token:" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top" Width="145"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>
